@@ -48,9 +48,6 @@ beez.Sequence = Backbone.Model.extend({
   },
 
   scheduleNote: function (beatNumber, time) {
-
-    if (!this.audioParam) return;
-    this.audioParam.setValueAtTime(this.get("notes")[beatNumber], time)
-
+    this.trigger("schedule", this.get("notes")[beatNumber], time);
   }
 });

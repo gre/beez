@@ -5,7 +5,7 @@ beez.params = new beez.Parameters(_.map([
     name: "bpm",
     value: 80,
     from: 20,
-    to: 450,
+    to: 200,
     tab: "carrier",
     axis: "x"
   },
@@ -19,11 +19,11 @@ beez.params = new beez.Parameters(_.map([
     axis: "y"
   },
   {
-    id: "modfreq",
-    name: "frequency",
-    value: 500,
-    from: 20,
-    to: 1000,
+    id: "modmult",
+    name: "multiplicator",
+    value: 1,
+    from: 0.25,
+    to: 3,
     tab: "modulator",
     axis: "x"
   },
@@ -37,22 +37,21 @@ beez.params = new beez.Parameters(_.map([
     axis: "y"
   },
   {
-    id: "lfofreq",
-    name: "frequency",
-    curve: "quad",
-    value: 4,
+    id: "reverbdry",
+    name: "dry",
+    value: 0.5,
     from: 0,
-    to: 20,
-    tab: "filterlfo",
+    to: 1,
+    tab: "reverb",
     axis: "x"
   },
   {
-    id: "lfogain",
-    name: "gain",
-    value: 400,
+    id: "reverbwet",
+    name: "wet",
+    value: 0.5,
     from: 0,
-    to: 1000,
-    tab: "filterlfo",
+    to: 1,
+    tab: "reverb",
     axis: "y"
   },
   {
