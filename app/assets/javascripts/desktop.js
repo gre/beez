@@ -17,10 +17,10 @@
         name: tab
       });
       xP.on("change:value", function (m, value) {
-        xyAxis.set("x", value);
+        xyAxis.set("x", xP.getPercent());
       });
       yP.on("change:value", function (m, value) {
-        xyAxis.set("y", value);
+        xyAxis.set("y", yP.getPercent());
       });
       xyAxis.on("change:x", function (m, value) {
         xP.setPercent(value);
