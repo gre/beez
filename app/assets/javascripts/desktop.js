@@ -1,11 +1,13 @@
 (function(){
 
+  var $params = $("#params");
+
   // Init Audio
   var audio = new beez.Audio();
 
   // Init Params
   (function (params) {
-    var paramsNode = $("#params").empty();
+    var paramsNode = $params.empty();
     _.each(params.groupBy("tab"), function (xyParams, tab) {
       var xP = _.find(xyParams, function (p) { return p.get("axis") === "x" });
       var yP = _.find(xyParams, function (p) { return p.get("axis") === "y" });
@@ -63,7 +65,7 @@
   function syncWaveformSize () {
     waveform.set({
       width: window.innerWidth,
-      height: window.innerHeight - 200
+      height: window.innerHeight
     });
   }
   $(window).on("resize", _.throttle(syncWaveformSize, 200));
@@ -71,7 +73,8 @@
 
   var waveformView = new beez.WaveformView({
     model: waveform,
-    el: $("#waveform")
+    el: $("#waveform"),
+    marginBottom: 150
   });
 
   // Starting the Audio
@@ -80,7 +83,7 @@
       waveform.setNode(audio.output, audio.ctx);
     });
   });
-  audio.basicExample();
+  audio.init();
   waveform.setNode(audio.output, audio.ctx);
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);

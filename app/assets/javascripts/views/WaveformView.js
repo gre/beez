@@ -1,5 +1,6 @@
 beez.WaveformView = Backbone.View.extend({
-  initialize: function () {
+  initialize: function (opts) {
+    this.marginBottom = opts.marginBottom || 0;
     this.canvas = document.createElement("canvas");
     this.$el.append(this.canvas);
     this.ctx = this.canvas.getContext("2d");
@@ -14,6 +15,7 @@ beez.WaveformView = Backbone.View.extend({
   },
   render: function () {
     var sampleRate = this.model.get("sampleRate");
+    var marginBottom = this.marginBottom;
     var ctx = this.ctx;
     var array = this.model.array;
     var arraySpectrum = this.model.arraySpectrum;
@@ -22,32 +24,41 @@ beez.WaveformView = Backbone.View.extend({
     var H = ctx.canvas.height;
     var fy = function (y) {
       y = y/256; // normalize
-      return (0.1+0.8*y) * H;
+      return (1*y) * (H-marginBottom);
     }
 
     ctx.clearRect(0,0,W,H);
-    ctx.globalAlpha = 0.8
+
+    // Spectrum Analyzer
+    var gradient = ctx.createLinearGradient(0,0,0,H);
+    gradient.addColorStop(0,'rgba(0,255,0,0.3)');
+    gradient.addColorStop(1,'rgba(255,0,0,0.3)');
+
+    var lengthSpectrum = arraySpectrum.length;
+    for (var i=0; i<lengthSpectrum; ++i) {
+      var value = arraySpectrum[i];
+      var x = i*5;
+      var w = 3;
+      ctx.fillStyle = "#def";
+      ctx.fillRect(x,0,w,H);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x,H-(H*value/256),w,H);
+    }
+
+    // Waveform
     ctx.beginPath();
-    ctx.strokeStyle = "#00aaff";
-    ctx.lineWidth = 5;
     ctx.moveTo(0, fy(array[0]));
     for (var i=0; i<length; ++i) {
       ctx.lineTo(W*i/length, fy(array[i]));
     }
+
+    ctx.strokeStyle = "#9ac";
+    ctx.lineWidth = 9;
     ctx.stroke();
 
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 8;
+    ctx.stroke();
 
-    var gradient = ctx.createLinearGradient(0,0,0,H);
-    gradient.addColorStop(1,'#0000ff');
-    gradient.addColorStop(0.75,'#48B');
-    gradient.addColorStop(0.25,'#B84');
-    gradient.addColorStop(0,'#ff0000');
-
-    ctx.fillStyle = gradient;
-    var lengthSpectrum = arraySpectrum.length;
-    for (var i=0; i<lengthSpectrum; ++i) {
-      var value = arraySpectrum[i]
-      ctx.fillRect(i*5,H-(H*value/256),3,H);
-    }
   }
 });

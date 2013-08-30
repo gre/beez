@@ -2,6 +2,9 @@ html, body {
   padding: 0;
   margin: 0;
 }
+body {
+  overflow: hidden;
+}
 
 * {
   user-select: none;
@@ -48,4 +51,35 @@ footer > div {
   top: 0;
   left: 0;
   background: #aaa;
+}
+
+#waveform {
+}
+
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  text-align: center;
+  h1 {
+    padding: 0;
+    margin: 0;
+    font-size: 2em;
+    font-family: sans-serif;
+    color: #cde;
+    opacity: 1;
+  }
+  .github {
+    float: right;
+    padding: 5px;
+    color: #abc;
+    text-decoration: none;
+  }
+}
+
+footer {
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  white-space: nowrap;
 }

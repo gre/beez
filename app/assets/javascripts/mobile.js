@@ -69,12 +69,12 @@
 
   tabs.first().trigger("tap", tabs.first());
 
-  xyAxis.on("change:x", function (m, x) {
+  xyAxis.on("change:x", _.throttle(function (m, x) {
     xP && hive.send(["set", xP.get("id"), x]);
-  });
-  xyAxis.on("change:y", function (m, y) {
+  }, 50));
+  xyAxis.on("change:y", _.throttle(function (m, y) {
     yP && hive.send(["set", yP.get("id"), y]);
-  });
+  }, 50));
 
 
 }());

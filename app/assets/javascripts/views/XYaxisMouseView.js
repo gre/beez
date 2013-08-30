@@ -71,7 +71,9 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
     var c = this.ctx,
         canvas = this.canvas,
-        backgroundColor = "#efefef";
+        backgroundColor = "rgba(250,250,250,0.7)";
+
+    c.clearRect(0, 0, canvas.width, canvas.height);
 
     c.fillStyle = backgroundColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -109,7 +111,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
     // Circle
     var radius = this.model.get("changing") ? 8 : 6;
     c.lineWidth = this.model.get("changing") ? 8 : 4;
-    c.strokeStyle = "hsl(0, 50%, 40%)";
+    c.strokeStyle = "hsl(0, 50%, 50%)";
     c.beginPath();
     c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), radius, 0, Math.PI * 2, false);
     c.stroke();

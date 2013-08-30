@@ -33,7 +33,7 @@ beez.Audio = Backbone.Model.extend({
     audioParam.value = param.get("value");
   },
 
-  basicExample: function () {
+  init: function () {
     var ctx = this.ctx,
       self = this;
 
@@ -45,7 +45,7 @@ beez.Audio = Backbone.Model.extend({
     var carrier = ctx.createOscillator();
     this.seq.audioParam = carrier.frequency;
 
-    carrier.type = "square";
+    carrier.type = "triangle";
     //this.bindParam(beez.params.get("carrierfreq"), carrier.frequency);
     var carrierGain = ctx.createGainNode();
     this.bindParam(beez.params.get("carriergain"), carrierGain.gain);
@@ -73,6 +73,7 @@ beez.Audio = Backbone.Model.extend({
     lfo.start(0);
     lfo.connect(lfoGain);
     lfoGain.connect(filter.frequency);
+
 
     carrier.start(0);
 
