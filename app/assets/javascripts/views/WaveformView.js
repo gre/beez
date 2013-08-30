@@ -26,7 +26,7 @@ beez.WaveformView = Backbone.View.extend({
     }
 
     ctx.clearRect(0,0,W,H);
-    ctx.globalAlpha = 0.5
+    ctx.globalAlpha = 0.8
     ctx.beginPath();
     ctx.strokeStyle = "#00aaff";
     ctx.lineWidth = 5;
@@ -36,7 +36,14 @@ beez.WaveformView = Backbone.View.extend({
     }
     ctx.stroke();
 
-    ctx.fillStyle = "#f0a";
+
+    var gradient = ctx.createLinearGradient(0,0,0,H);
+    gradient.addColorStop(1,'#0000ff');
+    gradient.addColorStop(0.75,'#48B');
+    gradient.addColorStop(0.25,'#B84');
+    gradient.addColorStop(0,'#ff0000');
+
+    ctx.fillStyle = gradient;
     var lengthSpectrum = arraySpectrum.length;
     for (var i=0; i<lengthSpectrum; ++i) {
       var value = arraySpectrum[i]
