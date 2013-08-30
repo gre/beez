@@ -6,6 +6,7 @@ beez.WaveformView = Backbone.View.extend({
     this.listenTo(this.model, "change:width change:height", this.syncSize);
     this.listenTo(this.model, "update", this.render);
     this.syncSize();
+    this.renderCounter = 0;
   },
   syncSize: function () {
     this.canvas.width = this.model.get("width");
@@ -24,7 +25,14 @@ beez.WaveformView = Backbone.View.extend({
       y = y/256; // normalize
       return (0.1+0.8*y) * H;
     }
-    ctx.clearRect(0,0,W,H);
+
+    if(this.renderCounter > 2) {
+      this.renderCounter = 0;
+      ctx.clearRect(0,0,W,H);
+    } else {
+      this.renderCounter++;
+    }
+    ctx.globalAlpha = 0.5
     ctx.beginPath();
     ctx.strokeStyle = "#00aaff";
     ctx.lineWidth = 5;
@@ -32,12 +40,13 @@ beez.WaveformView = Backbone.View.extend({
     for (var i=0; i<length; ++i) {
       ctx.lineTo(W*i/length, fy(array[i]));
     }
+    ctx.stroke();
 
+    ctx.fillStyle = "#f0a";
     var lengthSpectrum = arraySpectrum.length;
     for (var i=0; i<lengthSpectrum; ++i) {
       var value = arraySpectrum[i]
       ctx.fillRect(i*5,H-(H*value/256),3,H);
     }
-    ctx.stroke();
   }
 });
