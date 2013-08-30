@@ -7,7 +7,7 @@
 // event: "data", {jsobject} // when receiving data
 
 function trace(text) {
-    console.log(((new Date()).getTime() / 1000) + ": " + text);
+    //console.log(((new Date()).getTime() / 1000) + ": " + text);
 }
 
 function logError(error) {
@@ -19,10 +19,10 @@ beez.Peer = Backbone.Model.extend({
         this.hivebroker = options.hivebroker;
         this.beepeerbroker = options.beepeerbroker;
         this.isinitiator = options.isinitiator;
-        this.on("message", this.onmessage);
+        this.on("message", this.onmessage, this);
         this.localPeerConnection = null;
         this.createConnection(this.isinitiator);
-        this.sendChannel = null;
+        //this.sendChannel = null;
     },
     createConnection: function(isinitiator) {
       var servers = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
@@ -30,7 +30,7 @@ beez.Peer = Backbone.Model.extend({
       trace('Created local peer connection object localPeerConnection');
 
       this.localPeerConnection.onicecandidate = _.bind(this.gotLocalCandidate, this);
-
+      //alert("createConnection")
       if (isinitiator) {
         try {
           // Reliable Data Channels not yet supported in Chrome
@@ -48,20 +48,21 @@ beez.Peer = Backbone.Model.extend({
 
         this.localPeerConnection.createOffer(_.bind(this.gotLocalDescription, this));
       } else {
-          this.localPeerConnection.ondatachannel = this.gotReceiveChannel;
+          this.localPeerConnection.ondatachannel = _.bind(this.gotReceiveChannel, this);
       }
     },
     onmessage: function(json) {
         var data = JSON.parse(json);
-        console.log(json)
+        var self = this;
         if (data.sdp) {
             trace("onmessage: Session description received, set it: " + JSON.stringify(data.sdp));
             this.localPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp), function () {
-                    trace("onmessage: setRemoteDescription callback: " + this.localPeerConnection.remoteDescription.type);
+
+                    trace("onmessage: setRemoteDescription callback: " + self.localPeerConnection.remoteDescription.type);
                     // if we received an offer, we need to answer
-                    if (this.localPeerConnection.remoteDescription.type == "offer") {
+                    if (self.localPeerConnection.remoteDescription.type == "offer") {
                         trace("Create answer");
-                        this.localPeerConnection.createAnswer(onLocalDescriptionGenerated, logError);
+                        self.localPeerConnection.createAnswer(_.bind(self.onLocalDescriptionGenerated, self), logError);
                     }
                 }, logError);
         } else if (data.candidate) {
@@ -80,8 +81,8 @@ beez.Peer = Backbone.Model.extend({
     },
     // Send stuff
     gotLocalDescription: function (desc) {
-      trace("gotLocalDescription");
       var self = this;
+      //console.log("gotLocalDescription",this)
       this.localPeerConnection.setLocalDescription(desc, function() {
         self.signalingChannelSend(JSON.stringify({ "sdp": self.localPeerConnection.localDescription }));
       }, logError);
@@ -98,24 +99,34 @@ beez.Peer = Backbone.Model.extend({
 
     handleMessage: function (event) {
       trace('Received message: ' + event.data);
+      if (this.hivebroker)
+        this.hivebroker.onrtcmessage(event.data);
     },
 
     handleSendChannelStateChange: function () {
       var readyState = this.sendChannel.readyState;
+      if (readyState == "open") {
+        console.log("webrtc connection establshed!");
+      }
       trace('Send channel state is: ' + readyState);
     },
     // For not initiator only
     gotReceiveChannel: function (event) {
         trace('Receive Channel Callback, OK');
         this.sendChannel = event.channel;
-        this.sendChannel.onmessage = this.handleMessage;
-        this.sendChannel.onopen = this.handleSendChannelStateChange;
-        this.sendChannel.onclose = this.handleSendChannelStateChange;
+        this.sendChannel.onmessage = _.bind(this.handleMessage, this);
+        this.sendChannel.onopen = _.bind(this.handleSendChannelStateChange, this);
+        this.sendChannel.onclose = _.bind(this.handleSendChannelStateChange, this);
     },
     onLocalDescriptionGenerated: function (desc) {
+        var self = this;
         this.localPeerConnection.setLocalDescription(desc, function() {
-            this.signalingChannelSend(JSON.stringify({ "sdp": this.localPeerConnection.localDescription }));
+            self.signalingChannelSend(JSON.stringify({ "sdp": self.localPeerConnection.localDescription }));
         }, logError);
+    },
+    rtcsend: function(data) {
+        console.log("RTC send message", data);
+        this.sendChannel.send(JSON.stringify(data));
     }
 });
 
@@ -125,6 +136,7 @@ beez.HiveBroker = Backbone.Model.extend({
         this.peers = new Backbone.Collection();
         this.ws = options.ws;
         this.ws.onmessage = _.bind(this.onmessage, this);
+        this.messagecallback = options.onmessage;
     },
     // json: { client_id: 123, data: {} }
     onmessage: function(event) {
@@ -133,16 +145,20 @@ beez.HiveBroker = Backbone.Model.extend({
         var peer = this.peers.get(json.from);
 
         if (peer) {
-            console.log('PEER FOUND');
             peer.trigger("message", json.data);
         } else {
-            console.log('PEER NOT FOUND');
-            this.peers.add(new beez.Peer({id: json.from, hivebroker: this, isinitiator: false}));
-
+            var peer = new beez.Peer({id: json.from, hivebroker: this, isinitiator: false});
+            this.peers.add(peer);
+            peer.trigger("message", json.data);
         }
     },
     wssend: function(id, json) {
+        console.log("send data over websocket: ", {"to": id, "data": json});
+
         this.ws.send(JSON.stringify( {"to": id, "data": json} ));
+    },
+    onrtcmessage: function(data) {
+        this.messagecallback(data);
     }
 });
 
@@ -151,12 +167,22 @@ beez.BeePeerBroker = Backbone.Model.extend({
         this.ws = options.ws;
         this.ws.onmessage = _.bind(this.onmessage, this);
         this.peer = new beez.Peer({id: options.id, beepeerbroker: this, isinitiator: true});
+        this.messagecallback = options.onmessage;
     },
-    onmessage: function(json) {
-        peer.trigger("message", json.data);
+    onmessage: function(event) {
+        var json = JSON.parse(event.data);
+        console.log('BeePeerBroker: receive json ', json);
+
+        this.peer.trigger("message", json.data);
     },
     wssend: function(id, json) {
         trace("send data over websocket: " + JSON.stringify(json));
         this.ws.send(JSON.stringify( {"to": "123456789", "data": json} ));
+    },
+    send: function(json) {
+        this.peer.rtcsend(json);
+    },
+    onrtcmessage: function(data) {
+        this.messagecallback(data);
     }
 });

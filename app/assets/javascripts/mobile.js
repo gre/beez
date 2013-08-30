@@ -5,6 +5,7 @@
   var ws = new WebSocket(ws_host);
   ws.onopen = function() {
       var beePeerBroker = new beez.BeePeerBroker({ws: ws});
+      window.beePeerBroker = beePeerBroker;
   }
 
   OFFSET_Y = 50;
