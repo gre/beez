@@ -63,22 +63,47 @@ beez.XYaxisMouseView = Backbone.View.extend({
   render: function () {
 
     var c = this.ctx,
-        canvas = this.canvas;
+        canvas = this.canvas,
+        backgroundColor = "#efefef";
 
-    c.fillStyle = "#cde";
+    c.fillStyle = backgroundColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
-    c.lineWidth = 4;
+    c.lineWidth = 6;
     c.strokeStyle = "#789";
     c.strokeRect(0, 0, canvas.width, canvas.height);
 
+    c.lineWidth = 1;
+    c.strokeRect(0, 0, canvas.width, canvas.height / 2 | 0);
+    c.strokeRect(0, 0, canvas.width / 2 |0, canvas.height);
+
+    c.font = "11pt Helvetica, Arial, sans-serif";
+
+    // Main label
+    var dimensions = c.measureText(this.model.get("name"));
+    c.fillStyle = backgroundColor;
+    c.fillRect((canvas.width - dimensions.width) / 2 - 5, (canvas.height  / 2) - 10, dimensions.width + 10, 20);
+
+    c.fillStyle = "#789";
+    c.fillText(this.model.get("name"), (canvas.width - dimensions.width) / 2, (canvas.height  / 2) + 4);
+
+    // Axis labels
+    c.font = "8pt Helvetica, Arial, sans-serif";
+
+    dimensions = c.measureText(this.model.get("ylabel"));
+    c.fillText(this.model.get("ylabel"), canvas.width - dimensions.width - 5, 14);
+
+    c.translate(14, canvas.height - 5);
+    c.rotate(-Math.PI / 2);
+    c.fillText(this.model.get("xlabel"), 0, 0);
+    c.rotate(Math.PI / 2);
+    c.translate(-14, -(canvas.height - 5));
+
+    // Circle
     c.fillStyle = "hsl(0, 50%, 40%)";
     c.beginPath();
     c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), 10, 0, Math.PI * 2, false);
     c.fill();
 
-    c.fillStyle = "#fff";
-    c.font = "10pt Helvetica, Arial, sans-serif";
-    c.fillText(this.model.get("name"), 10, 18);
 
   }
 });
