@@ -5,7 +5,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
     this.ctx = this.canvas.getContext("2d");
     this.listenTo(this.model, "change:width change:height", this.syncSize);
     this.listenTo(this.model, "change:x change:y", this.syncParam);
-    this.listenTo(this.model, "update", this.render);
+    this.listenTo(this.model, "change", this.render);
     this.syncSize();
     this.syncParam();
   },
@@ -107,10 +107,11 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.translate(-12, -(dimensions.width + 6));
 
     // Circle
+    var radius = this.model.get("changing") ? 8 : 6;
+    c.lineWidth = this.model.get("changing") ? 8 : 4;
     c.strokeStyle = "hsl(0, 50%, 40%)";
-    c.lineWidth = 6;
     c.beginPath();
-    c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), 8, 0, Math.PI * 2, false);
+    c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), radius, 0, Math.PI * 2, false);
     c.stroke();
 
 
