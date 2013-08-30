@@ -33,7 +33,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
     this.model.set({
       x: x,
-      y: y,
+      y: 1 - y,
       changing: true
     });
 
@@ -75,6 +75,10 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.beginPath();
     c.arc(canvas.width * this.model.get("x"), canvas.height * this.model.get("y"), 10, 0, Math.PI * 2, false);
     c.fill();
+
+    c.fillStyle = "#fff";
+    c.font = "10pt Helvetica, Arial, sans-serif";
+    c.fillText(this.model.get("name"), 10, 18);
 
   }
 });
