@@ -2,12 +2,16 @@
 beez.Audio = Backbone.Model.extend({
   initialize: function () {
     this.ctx = new webkitAudioContext();
+    this.seq = new beez.Sequence({
+      ctx: this.ctx
+    });
+    this.seq.play();
   },
 
   start: function () {
     this.output.connect(this.ctx.destination);
   },
-  
+
   stop: function () {
     this.output.disconnect(this.ctx.destination);
   },
@@ -20,14 +24,23 @@ beez.Audio = Backbone.Model.extend({
   },
 
   basicExample: function () {
-    var ctx = this.ctx;
+    var ctx = this.ctx,
+      self = this;
+
+    beez.params.get("bpm").on("change:value", function (m, value) {
+      self.seq.set("bpm", value);
+    });
+    this.seq.set("bpm", beez.params.get("bpm").get("value"));
+
     var carrier = ctx.createOscillator();
+    this.seq.audioParam = carrier.frequency;
+
     carrier.type = "square";
-    this.bindParam(beez.params.get("carrierfreq"), carrier.frequency);
+    //this.bindParam(beez.params.get("carrierfreq"), carrier.frequency);
     var carrierGain = ctx.createGainNode();
     this.bindParam(beez.params.get("carriergain"), carrierGain.gain);
     carrier.connect(carrierGain);
-    
+
     var mod = ctx.createOscillator();
     mod.type = "sine";
     this.bindParam(beez.params.get("modfreq"), mod.frequency);

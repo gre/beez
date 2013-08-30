@@ -1,11 +1,11 @@
 
 beez.params = new beez.Parameters(_.map([
   {
-    id: "carrierfreq",
-    name: "frequency",
-    value: 150,
+    id: "bpm",
+    name: "bpm",
+    value: 80,
     from: 20,
-    to: 1000,
+    to: 450,
     tab: "carrier",
     axis: "x"
   },
