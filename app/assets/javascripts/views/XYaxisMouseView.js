@@ -1,12 +1,12 @@
 beez.XYaxisMouseView = Backbone.View.extend({
   initialize: function () {
     this.canvas = document.createElement("canvas");
-    this.canvas.width = "300";
-    this.canvas.width = "200";
     this.$el.append(this.canvas);
     this.ctx = this.canvas.getContext("2d");
+    this.listenTo(this.model, "change:width change:height", this.syncSize);
     this.listenTo(this.model, "change:x change:y", this.syncParam);
     this.listenTo(this.model, "update", this.render);
+    this.syncSize();
     this.syncParam();
   },
 
@@ -56,6 +56,11 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
   onMouseLeave: function (e) {
     this.onMouseUp(e);
+  },
+
+  syncSize: function () {
+    this.canvas.width = this.model.get("width");
+    this.canvas.height = this.model.get("height");
   },
 
   syncParam: function () {
