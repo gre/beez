@@ -12,6 +12,7 @@ import akka.util.Timeout
 import akka.pattern.ask
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.Logger
 
 object PeersActor {
 
@@ -30,12 +31,12 @@ object PeersActor {
     (ref ? Join(id)).map {
       case Connected(out) => {
         val in = Iteratee.foreach[JsValue] { msg =>
-          println("\n" + msg + "\n")
+          Logger.debug("Received a message from " + id + ": \n" + msg + "\n")
           val maybeReceiver = (msg \ "to").asOpt[String]
           maybeReceiver.map { to =>
             ref ! Talk(id, to, (msg \ "data"))
           }.getOrElse {
-            println("Missing \"to\": ignored.") 
+            Logger.debug("Message from " + id + " ignored: bad JSON format")
           }
         }.map { _ =>
           ref ! Quit(id)
@@ -66,24 +67,25 @@ class PeersActor extends Actor {
   def isServer(id: String) = serverId == id
 
   def initServer() = {
-    println("Welcome server !")
-    serverEnumerator = Some(Concurrent.unicast[JsValue](
+    Logger.info("Welcome to the hive !");
+    val out = Concurrent.unicast[JsValue](
       channel => serverChannel = Some(channel),
-      () => println("Channel server has ended"),
-      (error, _) => println("Error with this server channel")
-    ))
+      () => Logger.warn("Hive channel has been closed properly."),
+      (error, _) => Logger.error("Unexepected error with the hive channel :(")
+    )
+    serverEnumerator = Some(out)
     serverEnumerator
   }
 
   def newPeer(id: String) = {
-    println("Welcome peer " + id)
+    Logger.info("Welcome to the Bee " + id);
     Concurrent.unicast[JsValue](
       channel => peers += (id -> channel),
       onComplete = peers.filter {
         case (channelId, _) => id != channelId
       },
       onError = {
-        case(error, _) => println("Error with this channel " + id)
+        case(error, _) => Logger.error("Unexepected with the bee " + id)
       }
     )
   }
@@ -108,7 +110,7 @@ class PeersActor extends Actor {
 
     case Talk(id, to, data) => {
       if(isServer(id)) {
-        println("Server to peer " + id)
+        Logger.debug("Hive talks to the bee" + id)
         peers.collect {
           case (client, channel) if client == to => channel
         }.foreach { channel =>
@@ -116,10 +118,10 @@ class PeersActor extends Actor {
         }
       } else {
         serverChannel.map { out =>
-          println("Peer " + id + " to server")
+          Logger.debug("Bee " + id + " to the hive")
           out.push(data)
         } getOrElse {
-          println("Server channel doesn't exist")
+          Logger.error("Can't send message. Hive isn't initialized")
         }
       }
     }
