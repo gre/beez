@@ -24,7 +24,10 @@
   for (var i = 0; i < 5; i++) {
     params.push(
       new beez.XYaxisMouseView({
-        model: new beez.XYaxis(),
+        model: new beez.XYaxis({
+          x: 0.5,
+          y: 0.5
+        }),
         el: $("#param" + i)
       })
     )

@@ -25,9 +25,9 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.strokeStyle = "#789";
     c.strokeRect(0, 0, canvas.width, canvas.height);
 
-    c.fillStyle = "hsl(20, 40%, 40%)";
+    c.fillStyle = "hsl(0, 50%, 40%)";
     c.beginPath();
-    c.arc(this.model.x, this.model.y, 20, 0, Math.PI * 2, false);
+    c.arc(canvas.width * this.model.get("x"), canvas.height * this.model.get("y"), 10, 0, Math.PI * 2, false);
     c.fill();
 
   }
