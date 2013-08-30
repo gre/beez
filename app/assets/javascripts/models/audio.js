@@ -131,8 +131,8 @@ beez.Audio = Backbone.Model.extend({
         name: "resonance",
         curve: "quad",
         value: 1,
-        from: 20,
-        to: 0,
+        from: 0,
+        to: 20,
         tab: "filter",
         axis: "y"
       }
@@ -144,6 +144,7 @@ beez.Audio = Backbone.Model.extend({
     this.bindParam(this.params.get("carrierfreq"), carrier.frequency);
     var carrierGain = ctx.createGainNode();
     this.bindParam(this.params.get("carriergain"), carrierGain.gain);
+    carrier.connect(carrierGain);
     
     var mod = ctx.createOscillator();
     mod.type = "sine";
@@ -157,7 +158,7 @@ beez.Audio = Backbone.Model.extend({
     var filter = ctx.createBiquadFilter();
     this.bindParam(this.params.get("filterfreq"), filter.frequency);
     this.bindParam(this.params.get("filterQ"), filter.Q);
-    carrier.connect(filter);
+    carrierGain.connect(filter);
 
     var lfo = ctx.createOscillator();
     lfo.type = "sine";
