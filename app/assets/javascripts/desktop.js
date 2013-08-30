@@ -17,15 +17,17 @@
         name: tab
       });
       xP.on("change:value", function (m, value) {
-        xyAxis.set("x", xP.getPercent());
+        xyAxis.set("x", xP.getPercent(), { preventXyaxis: true });
       });
       yP.on("change:value", function (m, value) {
-        xyAxis.set("y", yP.getPercent());
+        xyAxis.set("y", yP.getPercent(), { preventXyaxis: true });
       });
-      xyAxis.on("change:x", function (m, value) {
+      xyAxis.on("change:x", function (m, value, opts) {
+        if (opts.preventXyaxis) return;
         xP.setPercent(value);
       });
-      xyAxis.on("change:y", function (m, value) {
+      xyAxis.on("change:y", function (m, value, opts) {
+        if (opts.preventXyaxis) return;
         yP.setPercent(value);
       });
 

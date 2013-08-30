@@ -1,8 +1,8 @@
 
 beez.AudioParameter = Backbone.Model.extend({
   defaults: {
-    min: 0,
-    max: 1,
+    from: 0,
+    to: 1,
     value: 0,
     name: "noname",
     curve: "linear"
@@ -15,17 +15,16 @@ beez.AudioParameter = Backbone.Model.extend({
     this.curve = beez.AudioMath.curves[this.get("curve")];
   },
   setPercent: function (percent) {
-    var min = this.get("min");
-    var max = this.get("max");
-    var round = this.get("round");
-    var value = min+this.curve.fun(percent)*(max-min);
-    this.set("value", round ? Math.round(value) : value);
+    var from = this.get("from");
+    var to = this.get("to");
+    var value = from+this.curve.fun(percent)*(to-from);
+    this.set("value", value);
   },
   getPercent: function () {
     var value = this.get("value");
-    var min = this.get("min");
-    var max = this.get("max");
-    return this.curve.inv((value-min)/(max-min));
+    var from = this.get("from");
+    var to = this.get("to");
+    return this.curve.inv((value-from)/(to-from));
   }
 });
 
@@ -65,32 +64,32 @@ beez.Audio = Backbone.Model.extend({
       {
         id: "carrierfreq",
         value: 150,
-        min: 50,
-        max: 500,
+        from: 20,
+        to: 1000,
         tab: "carrier",
         axis: "x"
       },
       {
         id: "carriergain",
         value: 1,
-        min: 0,
-        max: 1,
+        from: 0,
+        to: 1,
         tab: "carrier",
         axis: "y"
       },
       {
         id: "modfreq",
         value: 50,
-        min: 50,
-        max: 500,
+        from: 20,
+        to: 1000,
         tab: "modulator",
         axis: "x"
       },
       {
         id: "modgain",
         value: 100,
-        min: 0,
-        max: 500,
+        from: 0,
+        to: 500,
         tab: "modulator",
         axis: "y"
       },
@@ -98,16 +97,16 @@ beez.Audio = Backbone.Model.extend({
         id: "lfofreq",
         curve: "quad",
         value: 4,
-        min: 0,
-        max: 20,
+        from: 0,
+        to: 20,
         tab: "filterlfo",
         axis: "x"
       },
       {
         id: "lfogain",
         value: 400,
-        min: 0,
-        max: 1000,
+        from: 0,
+        to: 1000,
         tab: "filterlfo",
         axis: "y"
       },
@@ -115,8 +114,8 @@ beez.Audio = Backbone.Model.extend({
         id: "filterfreq",
         curve: "quad",
         value: 500,
-        min: 0,
-        max: 5000,
+        from: 0,
+        to: 5000,
         tab: "filter",
         axis: "x"
       },
@@ -124,8 +123,8 @@ beez.Audio = Backbone.Model.extend({
         id: "filterQ",
         curve: "quad",
         value: 1,
-        min: 0,
-        max: 20,
+        from: 20,
+        to: 0,
         tab: "filter",
         axis: "y"
       }
