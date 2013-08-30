@@ -22,6 +22,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
   onMouseDown: function (e) {
     this.down = true;
+    this.onMouseMove(e);
   },
 
   onMouseMove: function (e) {
@@ -41,6 +42,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
   onMouseUp: function (e) {
     this.down = false;
+    this.onMouseMove(e);
     this.model.set({
       changing: false
     });
@@ -99,10 +101,11 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.translate(-14, -(canvas.height - 5));
 
     // Circle
-    c.fillStyle = "hsl(0, 50%, 40%)";
+    c.strokeStyle = "hsl(0, 50%, 40%)";
+    c.lineWidth = 6;
     c.beginPath();
-    c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), 10, 0, Math.PI * 2, false);
-    c.fill();
+    c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), 8, 0, Math.PI * 2, false);
+    c.stroke();
 
 
   }
