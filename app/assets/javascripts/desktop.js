@@ -38,6 +38,7 @@
     });
   });
 
+
   /// init Waveform
   var waveform = new beez.Waveform({
     sampling: 1024

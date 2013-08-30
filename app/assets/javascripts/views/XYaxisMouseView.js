@@ -11,17 +11,20 @@ beez.XYaxisMouseView = Backbone.View.extend({
   },
 
   events: {
-    "mousedown": "onMousedown",
-    "mousemove": "onMousemove",
-    "mouseup": "onMouseup",
-    "mouseleave": "onMouseup"
+    "mousedown": "onMouseDown",
+    "mousemove": "onMouseMove",
+    "mouseup": "onMouseUp",
+
+    "mouseenter": "onMouseEnter",
+    "mouseleave": "onMouseUp"
+
   },
 
-  onMousedown: function (e) {
+  onMouseDown: function (e) {
     this.down = true;
   },
 
-  onMousemove: function (e) {
+  onMouseMove: function (e) {
     if (!this.down) return;
 
     var offset = this.$el.offset(),
@@ -30,13 +33,27 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
     this.model.set({
       x: x,
-      y: y
+      y: y,
+      changing: true
     });
 
   },
 
-  onMouseup: function (e) {
+  onMouseUp: function (e) {
     this.down = false;
+    this.model.set({
+      changing: false
+    });
+  },
+
+  onMouseEnter: function (e) {
+    if (e.which === 1) {
+      this.onMouseDown(e);
+    }
+  },
+
+  onMouseLeave: function (e) {
+    this.onMouseUp(e);
   },
 
   syncParam: function () {
