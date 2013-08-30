@@ -6,7 +6,6 @@ beez.WaveformView = Backbone.View.extend({
     this.listenTo(this.model, "change:width change:height", this.syncSize);
     this.listenTo(this.model, "update", this.render);
     this.syncSize();
-    this.renderCounter = 0;
   },
   syncSize: function () {
     this.canvas.width = this.model.get("width");
@@ -26,12 +25,7 @@ beez.WaveformView = Backbone.View.extend({
       return (0.1+0.8*y) * H;
     }
 
-    if(this.renderCounter > 2) {
-      this.renderCounter = 0;
-      ctx.clearRect(0,0,W,H);
-    } else {
-      this.renderCounter++;
-    }
+    ctx.clearRect(0,0,W,H);
     ctx.globalAlpha = 0.5
     ctx.beginPath();
     ctx.strokeStyle = "#00aaff";
