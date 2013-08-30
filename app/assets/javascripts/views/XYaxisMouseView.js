@@ -13,7 +13,8 @@ beez.XYaxisMouseView = Backbone.View.extend({
   events: {
     "mousedown": "onMousedown",
     "mousemove": "onMousemove",
-    "mouseup": "onMouseup"
+    "mouseup": "onMouseup",
+    "mouseleave": "onMouseup"
   },
 
   onMousedown: function (e) {
@@ -22,12 +23,16 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
   onMousemove: function (e) {
     if (!this.down) return;
-    var x = (e.clientX % this.canvas.width)/this.canvas.width,
-        y = (e.clientY % this.canvas.height)/this.canvas.height;
+
+    var offset = this.$el.offset(),
+        x = (e.clientX - offset.left)/this.canvas.width,
+        y = (e.clientY - offset.top)/this.canvas.height;
+
     this.model.set({
       x: x,
       y: y
     });
+
   },
 
   onMouseup: function (e) {
