@@ -70,7 +70,7 @@
   xyAxis.on("change:x", function (m, x) {
     xP && hive.send(["set", xP.get("id"), x]);
   });
-  xyAxis.on("change:y", function (m, x) {
+  xyAxis.on("change:y", function (m, y) {
     yP && hive.send(["set", yP.get("id"), y]);
   });
 
