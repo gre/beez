@@ -15,22 +15,26 @@ function logError(error) {
 }
 
 beez.Peer = Backbone.Model.extend({
-    initialize: function() {
+    initialize: function(options) {
+        this.hivebroker = options.hivebroker;
+        this.beepeerbroker = options.beepeerbroker;
+        this.isinitiator = options.isinitiator;
         this.on("message", this.onmessage);
         this.localPeerConnection = null;
         this.createConnection(this.isinitiator);
+        this.sendChannel = null;
     },
     createConnection: function(isinitiator) {
       var servers = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
       this.localPeerConnection = new webkitRTCPeerConnection(servers,{optional: [{RtpDataChannels: true}]});
       trace('Created local peer connection object localPeerConnection');
 
-      this.localPeerConnection.onicecandidate = this.gotLocalCandidate;
+      this.localPeerConnection.onicecandidate = _.bind(this.gotLocalCandidate, this);
 
       if (isinitiator) {
         try {
           // Reliable Data Channels not yet supported in Chrome
-          sendChannel = this.localPeerConnection.createDataChannel("sendDataChannel",{reliable: false});
+            this.sendChannel = this.localPeerConnection.createDataChannel("sendDataChannel",{reliable: false});
           trace('Created send data channel');
         } catch (e) {
           alert('Failed to create data channel. ' +
@@ -38,18 +42,18 @@ beez.Peer = Backbone.Model.extend({
           trace('createDataChannel() failed with exception: ' + e.message);
         }
 
-        sendChannel.onopen = this.handleSendChannelStateChange;
-        sendChannel.onclose = this.handleSendChannelStateChange;
-        sendChannel.onmessage = this.handleMessage;
+        this.sendChannel.onopen = _.bind(this.handleSendChannelStateChange, this);
+        this.sendChannel.onclose = _.bind(this.handleSendChannelStateChange, this);
+        this.sendChannel.onmessage = _.bind(this.handleMessage, this);
 
-        this.localPeerConnection.createOffer(this.gotLocalDescription);
+        this.localPeerConnection.createOffer(_.bind(this.gotLocalDescription, this));
       } else {
           this.localPeerConnection.ondatachannel = this.gotReceiveChannel;
       }
     },
     onmessage: function(json) {
-        var data = json.data;
-
+        var data = JSON.parse(json);
+        console.log(json)
         if (data.sdp) {
             trace("onmessage: Session description received, set it: " + JSON.stringify(data.sdp));
             this.localPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp), function () {
@@ -69,16 +73,17 @@ beez.Peer = Backbone.Model.extend({
     },
     signalingChannelSend: function(data) {
         if (this.isinitiator) {
-            this.hivebroker.wssend(this.id, data);
-        } else {
             this.beepeerbroker.wssend(this.id, data);
+        } else {
+            this.hivebroker.wssend(this.id, data);
         }
     },
     // Send stuff
     gotLocalDescription: function (desc) {
       trace("gotLocalDescription");
+      var self = this;
       this.localPeerConnection.setLocalDescription(desc, function() {
-        signalingChannel.send(JSON.stringify({ "sdp": this.localPeerConnection.localDescription }));
+        self.signalingChannelSend(JSON.stringify({ "sdp": self.localPeerConnection.localDescription }));
       }, logError);
       trace('Offer from localPeerConnection \n' + desc.sdp);
     },
@@ -87,7 +92,7 @@ beez.Peer = Backbone.Model.extend({
       trace('gotLocalCandidate local ice callback');
       if (event.candidate) {
         trace('Local ICE candidate: \n' + event.candidate.candidate);
-        signalingChannel.send(JSON.stringify({ "candidate": event.candidate }));
+        this.signalingChannelSend(JSON.stringify({ "candidate": event.candidate }));
       }
     },
 
@@ -96,56 +101,62 @@ beez.Peer = Backbone.Model.extend({
     },
 
     handleSendChannelStateChange: function () {
-      var readyState = sendChannel.readyState;
+      var readyState = this.sendChannel.readyState;
       trace('Send channel state is: ' + readyState);
     },
     // For not initiator only
     gotReceiveChannel: function (event) {
         trace('Receive Channel Callback, OK');
-        sendChannel = event.channel;
-        sendChannel.onmessage = handleMessage;
-        sendChannel.onopen = handleSendChannelStateChange;
-        sendChannel.onclose = handleSendChannelStateChange;
+        this.sendChannel = event.channel;
+        this.sendChannel.onmessage = this.handleMessage;
+        this.sendChannel.onopen = this.handleSendChannelStateChange;
+        this.sendChannel.onclose = this.handleSendChannelStateChange;
     },
     onLocalDescriptionGenerated: function (desc) {
         this.localPeerConnection.setLocalDescription(desc, function() {
-            signalingChannel.send(JSON.stringify({ "sdp": this.localPeerConnection.localDescription }));
+            this.signalingChannelSend(JSON.stringify({ "sdp": this.localPeerConnection.localDescription }));
         }, logError);
     }
-
 });
 
 beez.HiveBroker = Backbone.Model.extend({
-    initialize: function () {
+    initialize: function (options) {
+        this.id = options.id;
         this.peers = new Backbone.Collection();
-        this.ws.onmessage(this.onmessage);
+        this.ws = options.ws;
+        this.ws.onmessage = _.bind(this.onmessage, this);
     },
     // json: { client_id: 123, data: {} }
-    onmessage: function(json) {
-        var peer = this.peers.get(json.client_id);
+    onmessage: function(event) {
+        trace('Hive: receive json ')
+        var json = JSON.parse(event.data);
+        var peer = this.peers.get(json.from);
 
         if (peer) {
+            console.log('PEER FOUND');
             peer.trigger("message", json.data);
         } else {
-            this.peers.add(new beez.Peer({id: id, hivebroker: this, isinitiator: false}));
+            console.log('PEER NOT FOUND');
+            this.peers.add(new beez.Peer({id: json.from, hivebroker: this, isinitiator: false}));
 
         }
     },
-    wssend: function(client_id, json) {
-        this.ws.send(JSON.stringify( {"to": client_id, "data": data} ));
+    wssend: function(id, json) {
+        this.ws.send(JSON.stringify( {"to": id, "data": json} ));
     }
 });
 
 beez.BeePeerBroker = Backbone.Model.extend({
-    initialize: function () {
-        this.ws.onmessage(this.onmessage);
-        this.peer = new beez.Peer({id: id, beepeerbroker: this, isinitiator: true});
+    initialize: function (options) {
+        this.ws = options.ws;
+        this.ws.onmessage = _.bind(this.onmessage, this);
+        this.peer = new beez.Peer({id: options.id, beepeerbroker: this, isinitiator: true});
     },
     onmessage: function(json) {
         peer.trigger("message", json.data);
     },
-    wssend: function(json) {
-        this.ws.send(JSON.stringify( {"to": "123456789", "data": data} ));
+    wssend: function(id, json) {
+        trace("send data over websocket: " + JSON.stringify(json));
+        this.ws.send(JSON.stringify( {"to": "123456789", "data": json} ));
     }
-
 });

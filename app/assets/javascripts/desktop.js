@@ -44,7 +44,9 @@
 
   // Network
   var ws = new WebSocket("ws://localhost:9000/join/123456789");
-  var beez = new beez.HiveBroker({"ws": ws});
+  ws.onopen = function() {
+    var hiveBroker = new beez.HiveBroker({ws: ws});
+  }
 
   /// init Waveform
   var waveform = new beez.Waveform({

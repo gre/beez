@@ -114,12 +114,12 @@ class PeersActor extends Actor {
         peers.collect {
           case (client, channel) if client == to => channel
         }.foreach { channel =>
-          channel.push(data)
+          channel.push(Json.obj("data" -> data, "from" -> id))
         }
       } else {
         serverChannel.map { out =>
           Logger.debug("Bee " + id + " to the hive")
-          out.push(data)
+          out.push(Json.obj("data" -> data, "from" -> id))
         } getOrElse {
           Logger.error("Can't send message. Hive isn't initialized")
         }
