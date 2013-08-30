@@ -6,12 +6,13 @@
 // methods: send(jsobject)
 // event: "data", {jsobject} // when receiving data
 
+console = console || {log: function(){}};
 function trace(text) {
     //console.log(((new Date()).getTime() / 1000) + ": " + text);
 }
 
 function logError(error) {
-  console.log("Error: " + error.name + ": " + error.message);
+    console.log("Error: " + error.name + ": " + error.message);
 }
 
 beez.Peer = Backbone.Model.extend({
@@ -106,7 +107,7 @@ beez.Peer = Backbone.Model.extend({
     handleSendChannelStateChange: function () {
       var readyState = this.sendChannel.readyState;
       if (readyState == "open") {
-        console.log("webrtc connection establshed!");
+          //console.log("webrtc connection establshed!");
       }
       trace('Send channel state is: ' + readyState);
     },
@@ -125,7 +126,7 @@ beez.Peer = Backbone.Model.extend({
         }, logError);
     },
     rtcsend: function(data) {
-        console.log("RTC send message", data);
+        //console.log("RTC send message", data);
         this.sendChannel.send(JSON.stringify(data));
     }
 });
@@ -153,12 +154,12 @@ beez.HiveBroker = Backbone.Model.extend({
         }
     },
     wssend: function(id, json) {
-        console.log("send data over websocket: ", {"to": id, "data": json});
+        //console.log("send data over websocket: ", {"to": id, "data": json});
 
         this.ws.send(JSON.stringify( {"to": id, "data": json} ));
     },
     onrtcmessage: function(data) {
-        this.messagecallback(data);
+        this.messagecallback(JSON.parse(data));
     }
 });
 
@@ -171,7 +172,7 @@ beez.BeePeerBroker = Backbone.Model.extend({
     },
     onmessage: function(event) {
         var json = JSON.parse(event.data);
-        console.log('BeePeerBroker: receive json ', json);
+        //console.log('BeePeerBroker: receive json ', json);
 
         this.peer.trigger("message", json.data);
     },
@@ -180,7 +181,10 @@ beez.BeePeerBroker = Backbone.Model.extend({
         this.ws.send(JSON.stringify( {"to": "123456789", "data": json} ));
     },
     send: function(json) {
-        this.peer.rtcsend(json);
+        try {
+            this.peer.rtcsend(json);
+        } catch(e) {
+        }
     },
     onrtcmessage: function(data) {
         this.messagecallback(data);

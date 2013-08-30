@@ -1,7 +1,8 @@
 (function(){
   // Network
+
   var ws = new WebSocket(WEBSOCKET_ENDPOINT);
-  
+
   var hive;
   ws.onopen = function() {
     hive = new beez.BeePeerBroker({ws: ws});
@@ -13,7 +14,7 @@
   var $xyaxis = $("#xyaxis");
 
   var tabs = new Backbone.Collection();
-  
+
   _.each(beez.params.groupBy("tab"), function (xyParams, tabname) {
     var $tab = $('<div class="tab" />').appendTo($tabs);
     var tab = new beez.Tab({

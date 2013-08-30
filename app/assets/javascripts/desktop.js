@@ -47,10 +47,11 @@
   // Network
   var ws = new WebSocket(WEBSOCKET_ENDPOINT);
   var hive;
-  var rtconmessage = function (msg) {
+    var rtconmessage = function (msg) {
     switch (msg[0]) {
-      case "set":
+    case "set": {
         beez.params.get(msg[1]).setPercent(msg[2]);
+    }
         break;
     }
   }
