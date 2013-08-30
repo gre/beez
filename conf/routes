@@ -5,6 +5,9 @@
 # Home page
 GET     /                           controllers.Application.index
 
+
+GET     /hive                       controllers.Application.desktop
+GET     /bee                        controllers.Application.mobile
 GET     /join/:id                   controllers.Application.join(id)
 
 # Map static resources from the /public folder to the /assets URL path

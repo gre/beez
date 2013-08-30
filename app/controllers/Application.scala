@@ -9,7 +9,15 @@ import actors.PeersActor
 object Application extends Controller {
   
   def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+    Ok(views.html.index())
+  }
+
+  def desktop = Action {
+    Ok(views.html.desktop())
+  }
+
+  def mobile = Action {
+    Ok(views.html.mobile())
   }
 
   def join(id: String) = WebSocket.async[JsValue] { request =>

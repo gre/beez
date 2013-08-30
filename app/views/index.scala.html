@@ -1,7 +1,14 @@
-@(message: String)
+@()
 
-@main("Welcome to Play 2.1") {
-    
-    @play20.welcome(message)
-    
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+  <title>Beez</title>
+</head>
+<body>
+  <a href="@routes.Application.desktop">Desktop view</a>
+  <a href="@routes.Application.mobile">Mobile view</a>
+</body>
+</html>
