@@ -73,8 +73,8 @@
     });
   });
   audio.basicExample();
-  audio.start();
   waveform.setNode(audio.output, audio.ctx);
+  audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);
 
 }());
