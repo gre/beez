@@ -14,7 +14,9 @@
       var xyAxis = new beez.XYaxis({
         x: xP.getPercent(),
         y: yP.getPercent(),
-        name: tab
+        name: tab,
+        xlabel: xP.get("name"),
+        ylabel: yP.get("name")
       });
       xP.on("change:value", function (m, value) {
         xyAxis.set("x", xP.getPercent(), { preventXyaxis: true });
@@ -63,6 +65,6 @@
   audio.basicExample();
   audio.start();
   waveform.setNode(audio.output, audio.ctx);
-  setInterval(_.bind(waveform.update, waveform), 50);
+  setInterval(_.bind(waveform.update, waveform), 60);
 
 }());

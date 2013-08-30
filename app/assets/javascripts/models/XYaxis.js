@@ -3,6 +3,8 @@ beez.XYaxis = Backbone.Model.extend({
     x: 0.5,
     y: 0.5,
     changing: false,
-    name: ""
+    name: "",
+    xlabel: "",
+    ylabel: ""
   }
 });

@@ -4,11 +4,11 @@ beez.AudioParameter = Backbone.Model.extend({
     from: 0,
     to: 1,
     value: 0,
-    name: "noname",
     curve: "linear"
   },
   initialize: function () {
     this.on("change:curve", this.syncCurve);
+    if (!this.get("name")) this.set("name", this.get("id"));
     this.syncCurve();
   },
   syncCurve: function () {
@@ -63,6 +63,7 @@ beez.Audio = Backbone.Model.extend({
     this.setParams([
       {
         id: "carrierfreq",
+        name: "frequency",
         value: 150,
         from: 20,
         to: 1000,
@@ -71,6 +72,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "carriergain",
+        name: "gain",
         value: 1,
         from: 0,
         to: 1,
@@ -79,6 +81,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "modfreq",
+        name: "frequency",
         value: 50,
         from: 20,
         to: 1000,
@@ -87,6 +90,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "modgain",
+        name: "gain",
         value: 100,
         from: 0,
         to: 500,
@@ -95,6 +99,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "lfofreq",
+        name: "frequency",
         curve: "quad",
         value: 4,
         from: 0,
@@ -104,6 +109,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "lfogain",
+        name: "gain",
         value: 400,
         from: 0,
         to: 1000,
@@ -112,6 +118,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "filterfreq",
+        name: "frequency",
         curve: "quad",
         value: 500,
         from: 0,
@@ -121,6 +128,7 @@ beez.Audio = Backbone.Model.extend({
       },
       {
         id: "filterQ",
+        name: "resonance",
         curve: "quad",
         value: 1,
         from: 20,
