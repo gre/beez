@@ -8,7 +8,7 @@
   function syncWaveformSize () {
     waveform.set({
       width: window.innerWidth,
-      height: window.innerHeight - 100
+      height: window.innerHeight - 200
     });
   }
   $(window).on("resize", _.throttle(syncWaveformSize, 200));
@@ -19,6 +19,16 @@
     model: waveform,
     el: $("#waveform")
   });
+
+  var params = [];
+  for (var i = 0; i < 5; i++) {
+    params.push(
+      new beez.XYaxisMouseView({
+        model: new beez.XYaxis(),
+        el: $("#param" + i)
+      })
+    )
+  }
 
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 50);
