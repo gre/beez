@@ -35,8 +35,8 @@ beez.AudioParameters = Backbone.Collection.extend({
 
 beez.Audio = Backbone.Model.extend({
   initialize: function () {
+    this.params = new beez.AudioParameters();
     this.ctx = new webkitAudioContext();
-    this.basicExample();
   },
 
   start: function () {
@@ -48,7 +48,7 @@ beez.Audio = Backbone.Model.extend({
   },
 
   setParams: function (paramsConf) {
-    this.params = new beez.AudioParameters(_.map(paramsConf, function (o) {
+    this.params.reset(_.map(paramsConf, function (o) {
       return new beez.AudioParameter(o);
     }));
   },
@@ -76,7 +76,7 @@ beez.Audio = Backbone.Model.extend({
         min: 0,
         max: 1,
         tab: "carrier",
-        axis: "x"
+        axis: "y"
       },
       {
         id: "modfreq",

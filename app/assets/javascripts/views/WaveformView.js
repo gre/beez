@@ -26,7 +26,7 @@ beez.WaveformView = Backbone.View.extend({
     ctx.clearRect(0,0,W,H);
     ctx.beginPath();
     ctx.strokeStyle = "#cde";
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 10;
     ctx.moveTo(0, fy(array[0]));
     for (var i=0; i<length; ++i) {
       ctx.lineTo(W*i/length, fy(array[i]));

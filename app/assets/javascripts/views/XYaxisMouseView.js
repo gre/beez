@@ -10,6 +10,30 @@ beez.XYaxisMouseView = Backbone.View.extend({
     this.syncParam();
   },
 
+  events: {
+    "mousedown": "onMousedown",
+    "mousemove": "onMousemove",
+    "mouseup": "onMouseup"
+  },
+
+  onMousedown: function (e) {
+    this.down = true;
+  },
+
+  onMousemove: function (e) {
+    if (!this.down) return;
+    var x = (e.clientX % this.canvas.width)/this.canvas.width,
+        y = (e.clientY % this.canvas.height)/this.canvas.height;
+    this.model.set({
+      x: x,
+      y: y
+    });
+  },
+
+  onMouseup: function (e) {
+    this.down = false;
+  },
+
   syncParam: function () {
     this.render();
   },
