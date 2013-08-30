@@ -4,15 +4,24 @@ beez.Audio = Backbone.Model.extend({
     this.basicExample();
   },
 
+  start: function () {
+    this.output.connect(this.ctx.destination);
+  },
+  
+  stop: function () {
+    this.output.disconnect(this.ctx.destination);
+  },
+
   basicExample: function () {
     var ctx = this.ctx;
     var carrier = ctx.createOscillator();
-    carrier.type = "sine";
+    carrier.type = "square";
     this.on("change:carrierfreq", function (m, value) {
       carrier.frequency.value = value;
     });
     
     var mod = ctx.createOscillator();
+    mod.type = "sine";
     this.on("change:modfreq", function (m, value) {
       mod.frequency.value = value;
     });
@@ -20,6 +29,8 @@ beez.Audio = Backbone.Model.extend({
     this.on("change:modgain", function (m, value) {
       modGain.gain.value = value;
     });
+
+    mod.start(0);
     mod.connect(modGain);
     modGain.connect(carrier.frequency);
 
@@ -31,14 +42,18 @@ beez.Audio = Backbone.Model.extend({
       filter.Q.value = value;
     });
     carrier.connect(filter);
-    filter.connect(ctx.destination);
+
+    this.set("carrierfreq", 150);
+    this.set("modfreq", 50);
+    this.set("modgain", 100);
+    this.set("filterfreq", 500);
+    this.set("filterQ", 1);
 
     carrier.start(0);
 
-    this.set("carrierfreq", 300);
-    this.set("modfreq", 150);
-    this.set("modgain", 100);
-    this.set("filterfreq", 500);
-    this.set("filterQ", 2);
+    var compressor = ctx.createDynamicsCompressor();
+    filter.connect(compressor);
+
+    this.output = compressor;
   }
 });
