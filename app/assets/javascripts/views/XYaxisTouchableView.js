@@ -76,7 +76,6 @@ beez.XYaxisTouchableView = Backbone.View.extend({
   },
 
   render: function () {
-
     var c = this.ctx,
         canvas = this.canvas,
         backgroundColor = "#000";

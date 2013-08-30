@@ -29,6 +29,7 @@
   });
 
   var xyAxis = new beez.XYaxis({});
+  var xyAxisView;
   var xP, yP;
 
   function syncXyAxis () {
@@ -59,9 +60,10 @@
       xlabel: xP.get("name"),
       ylabel: yP.get("name")
     });
+    if (xyAxisView) xyAxisView.remove();
     xyAxisView = new beez.XYaxisTouchableView({
       model: xyAxis,
-      el: $xyaxis.empty()
+      el: $('<div/>').appendTo($xyaxis.empty())
     });
   });
 
