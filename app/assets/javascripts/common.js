@@ -3,7 +3,7 @@ beez.params = new beez.Parameters(_.map([
   {
     id: "bpm",
     name: "bpm",
-    value: 80,
+    value: 20,
     from: 20,
     to: 200,
     tab: "carrier",
@@ -12,7 +12,7 @@ beez.params = new beez.Parameters(_.map([
   {
     id: "carriergain",
     name: "gain",
-    value: 1,
+    value: 0,
     from: 0,
     to: 1,
     tab: "carrier",
@@ -77,4 +77,3 @@ beez.params = new beez.Parameters(_.map([
 ], function (o) {
   return new beez.Parameter(o);
 }));
-

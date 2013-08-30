@@ -75,5 +75,4 @@
     yP && hive.send(["set", yP.get("id"), y]);
   }, 50));
 
-
 }());
