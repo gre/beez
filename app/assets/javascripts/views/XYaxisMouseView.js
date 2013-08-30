@@ -96,14 +96,15 @@ beez.XYaxisMouseView = Backbone.View.extend({
     // Axis labels
     c.font = "8pt Helvetica, Arial, sans-serif";
 
-    dimensions = c.measureText(this.model.get("ylabel"));
-    c.fillText(this.model.get("ylabel"), canvas.width - dimensions.width - 5, 14);
+    dimensions = c.measureText(this.model.get("xlabel"));
+    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 5, canvas.height - 7);
 
-    c.translate(14, canvas.height - 5);
+    dimensions = c.measureText(this.model.get("ylabel"));
+    c.translate(12, dimensions.width + 6);
     c.rotate(-Math.PI / 2);
-    c.fillText(this.model.get("xlabel"), 0, 0);
+    c.fillText(this.model.get("ylabel"), 0, 0);
     c.rotate(Math.PI / 2);
-    c.translate(-14, -(canvas.height - 5));
+    c.translate(-12, -(dimensions.width + 6));
 
     // Circle
     c.strokeStyle = "hsl(0, 50%, 40%)";
