@@ -1,0 +1,27 @@
+@()
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Beez</title>
+  <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+</head>
+<body>
+  Main view
+  TODO
+
+  <script src="@routes.Assets.at("vendors/jquery/jquery.min.js")" type="text/javascript"></script>
+  <script src="@routes.Assets.at("vendors/underscore/underscore-min.js")" type="text/javascript"></script>
+  <script src="@routes.Assets.at("vendors/backbone/backbone-min.js")" type="text/javascript"></script>
+
+  <script type="text/javascript">
+  window.beez = {};
+  </script>
+  <script type="text/javascript" src="@routes.Assets.at("javascripts/models/network.js")"></script>
+  <script type="text/javascript" src="@routes.Assets.at("javascripts/models/audio.js")"></script>
+  <script type="text/javascript" src="@routes.Assets.at("javascripts/desktop.js")"></script>
+</body>
+</html>
+
