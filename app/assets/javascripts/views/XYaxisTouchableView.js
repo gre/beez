@@ -102,6 +102,24 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     c.rotate(Math.PI / 2);
     c.translate(-OFFSET, -(canvas.height - OFFSET2));
 
+    // grid
+    c.strokeStyle = "#666";
+    c.lineWidth = 1;
+    for (var i=0; i<10; ++i) {
+      var x = canvas.width*i/10;
+      c.beginPath();
+      c.moveTo(x, 0);
+      c.lineTo(x, canvas.height);
+      c.stroke();
+    }
+    for (var i=0; i<10; ++i) {
+      var y = canvas.height*i/10;
+      c.beginPath();
+      c.moveTo(0, y);
+      c.lineTo(canvas.width, y);
+      c.stroke();
+    }
+
     // pointer
     c.strokeStyle = !this.model.get("changing") ? "#fff" : "#ace";
     c.lineWidth = !this.model.get("changing") ? 3 : 6;

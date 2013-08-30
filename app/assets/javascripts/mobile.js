@@ -1,8 +1,6 @@
 (function(){
   // Network
-  var client_id = Math.round(Math.random() * 100000);
-  var ws_host = "ws://localhost:9000/join/" + client_id;
-  var ws = new WebSocket(ws_host);
+  var ws = new WebSocket(WEBSOCKET_ENDPOINT);
   
   var hive;
   ws.onopen = function() {

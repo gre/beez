@@ -12,11 +12,11 @@ object Application extends Controller {
     Ok(views.html.index())
   }
 
-  def desktop = Action {
+  def desktop = Action { implicit r =>
     Ok(views.html.desktop())
   }
 
-  def mobile = Action {
+  def mobile = Action { implicit r =>
     Ok(views.html.mobile())
   }
 

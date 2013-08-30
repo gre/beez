@@ -45,7 +45,7 @@
   }(beez.params));
 
   // Network
-  var ws = new WebSocket("ws://localhost:9000/join/123456789");
+  var ws = new WebSocket(WEBSOCKET_ENDPOINT);
   var hive;
   var rtconmessage = function (msg) {
     switch (msg[0]) {

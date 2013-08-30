@@ -62,7 +62,7 @@ class PeersActor extends Actor {
   private var serverChannel: Option[Channel[JsValue]] = None
   private var serverEnumerator: Option[Enumerator[JsValue]] = None
 
-  val serverId = "123456789"
+  val serverId = "_hive_"
 
   def isServer(id: String) = serverId == id
 
