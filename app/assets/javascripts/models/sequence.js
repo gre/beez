@@ -17,15 +17,15 @@ beez.Sequence = Backbone.Model.extend({
   },
 
   play: function () {
-    this.isPlaying = !this.isPlaying;
+    this.isPlaying = true;
+    this.current16thNote = 0;
+    this.nextNoteTime = this.ctx.currentTime;
+    this.scheduler();
+  },
 
-    if (this.isPlaying) {
-      this.current16thNote = 0;
-      this.nextNoteTime = this.ctx.currentTime;
-      this.scheduler();
-    } else {
-      window.clearTimeout( this.timerID );
-    }
+  stop: function () {
+    this.isPlaying = false;
+    window.clearTimeout( this.timerID );
   },
 
   nextNote: function () {

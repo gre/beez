@@ -67,6 +67,11 @@
   });
 
   // Starting the Audio
+  $("#waveform").click(function () {
+    audio.toggle(function () {
+      waveform.setNode(audio.output, audio.ctx);
+    });
+  });
   audio.basicExample();
   audio.start();
   waveform.setNode(audio.output, audio.ctx);
