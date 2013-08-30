@@ -21,7 +21,7 @@ beez.params = new beez.Parameters(_.map([
   {
     id: "modfreq",
     name: "frequency",
-    value: 50,
+    value: 500,
     from: 20,
     to: 1000,
     tab: "modulator",
@@ -59,7 +59,7 @@ beez.params = new beez.Parameters(_.map([
     id: "filterfreq",
     name: "frequency",
     curve: "quad",
-    value: 500,
+    value: 1000,
     from: 0,
     to: 5000,
     tab: "filter",
