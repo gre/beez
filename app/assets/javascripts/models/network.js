@@ -7,7 +7,7 @@
 // event: "data", {jsobject} // when receiving data
 
 function trace(text) {
-    //console.log(((new Date()).getTime() / 1000) + ": " + text);
+    console.log(((new Date()).getTime() / 1000) + ": " + text);
 }
 
 function logError(error) {

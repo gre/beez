@@ -3,9 +3,10 @@
   var client_id = Math.round(Math.random() * 100000);
   var ws_host = "ws://localhost:9000/join/" + client_id;
   var ws = new WebSocket(ws_host);
+  
+  var hive;
   ws.onopen = function() {
-      var beePeerBroker = new beez.BeePeerBroker({ws: ws});
-      window.beePeerBroker = beePeerBroker;
+    hive = new beez.BeePeerBroker({ws: ws});
   }
 
   OFFSET_Y = 50;
@@ -28,6 +29,7 @@
   });
 
   var xyAxis = new beez.XYaxis({});
+  var xP, yP;
 
   function syncXyAxis () {
     xyAxis.set({
@@ -44,10 +46,10 @@
       t.set("active", false);
     });
     var tabname = tab.get("name");
-    var xP = beez.params.find(function (p) {
+    xP = beez.params.find(function (p) {
       return p.get("tab")===tabname && p.get("axis") === "x";
     });
-    var yP = beez.params.find(function (p) {
+    yP = beez.params.find(function (p) {
       return p.get("tab")===tabname && p.get("axis") === "y";
     });
     if (!xP) throw "can't find param for x in tab "+tabname;
@@ -64,6 +66,13 @@
   });
 
   tabs.first().trigger("tap", tabs.first());
+
+  xyAxis.on("change:x", function (m, x) {
+    xP && hive.send(["set", xP.get("id"), x]);
+  });
+  xyAxis.on("change:y", function (m, x) {
+    yP && hive.send(["set", yP.get("id"), y]);
+  });
 
 
 }());

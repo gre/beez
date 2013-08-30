@@ -44,11 +44,16 @@
 
   // Network
   var ws = new WebSocket("ws://localhost:9000/join/123456789");
-  var rtconmessage = function(json) {
-    //console.log("rtconmessage", json)
+  var hive;
+  var rtconmessage = function (msg) {
+    switch (msg[0]) {
+      case "set":
+        beez.params.get(msg[1]).setPercent(msg[2]);
+        break;
+    }
   }
   ws.onopen = function() {
-    var hiveBroker = new beez.HiveBroker({ws: ws, onmessage: rtconmessage});
+    hive = new beez.HiveBroker({ws: ws, onmessage: rtconmessage});
   }
 
   /// init Waveform
