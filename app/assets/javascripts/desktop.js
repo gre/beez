@@ -4,9 +4,9 @@
   var audio = new beez.Audio();
 
   // Init Params
-  audio.params.on("reset", function () {
+  (function (params) {
     var paramsNode = $("#params").empty();
-    _.each(this.groupBy("tab"), function (xyParams, tab) {
+    _.each(params.groupBy("tab"), function (xyParams, tab) {
       var xP = _.find(xyParams, function (p) { return p.get("axis") === "x" });
       var yP = _.find(xyParams, function (p) { return p.get("axis") === "y" });
       if (!xP) throw "can't find param for x in tab "+tab;
@@ -40,7 +40,7 @@
       });
       paramsNode.append(node);
     });
-  });
+  }(beez.params));
 
 
   /// init Waveform
