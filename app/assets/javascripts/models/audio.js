@@ -118,34 +118,41 @@ beez.Audio = Backbone.Model.extend({
     (function (modmult, carriermult) {
       var currentNoteFreq;
 
-      var DIV = 4;
+      var DIV = 2;
+
+      function valueToMult (value) {
+        var mul = Math.round(DIV*value)/DIV;
+        if (mul === 0) mul = 0.25;
+        return mul;
+      }
 
       function syncModMult (noteFreq, time) {
-        var multiplicator = Math.round(DIV*modmult.get("value"))/DIV;
-        if (multiplicator <= 0) multiplicator = 1/DIV;
+        var multiplicator = valueToMult(modmult.get("value"));
         mod.frequency.setValueAtTime(noteFreq*multiplicator, time);
       }
       function syncCarrierMult (noteFreq, time) {
-        var multiplicator = Math.round(DIV*carriermult.get("value"))/DIV;
-        if (multiplicator <= 0) multiplicator = 1/DIV;
+        var multiplicator = valueToMult(carriermult.get("value"));
         carrier.frequency.setValueAtTime(noteFreq*multiplicator, time);
+      }
+      function syncMults (noteFreq, time) {
+        syncCarrierMult(noteFreq, time);
+        syncModMult(noteFreq, time);
       }
 
       modmult.on("change:value", function () {
         if (currentNoteFreq) {
-          syncModMult(currentNoteFreq, ctx.currentTime);
+          syncMults(currentNoteFreq, ctx.currentTime);
         }
       });
       carriermult.on("change:value", function () {
         if (currentNoteFreq) {
-          syncCarrierMult(currentNoteFreq, ctx.currentTime);
+          syncMults(currentNoteFreq, ctx.currentTime);
         }
       });
 
       this.seq.on("schedule", function (noteFreq, time) {
         currentNoteFreq = noteFreq;
-        syncCarrierMult(noteFreq, time);
-        syncModMult(noteFreq, time);
+        syncMults(noteFreq, time);
       }, this);
 
     }).call(this, beez.params.get("modmult"), beez.params.get("carriermult"));

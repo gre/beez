@@ -57,7 +57,7 @@
     if (!xP) throw "can't find param for x in tab "+tabname;
     if (!yP) throw "can't find param for y in tab "+tabname;
     xyAxis.set({
-      name: tabname,
+      tab: tabname,
       xlabel: xP.get("name"),
       ylabel: yP.get("name")
     });
@@ -70,11 +70,11 @@
 
   tabs.first().trigger("tap", tabs.first());
 
-  xyAxis.on("change:x", _.throttle(function (m, x) {
-    xP && hive.send(["set", xP.get("id"), x]);
-  }, 50));
-  xyAxis.on("change:y", _.throttle(function (m, y) {
-    yP && hive.send(["set", yP.get("id"), y]);
+  xyAxis.on("change:x change:y", _.throttle(function () {
+    var x = this.get("x");
+    var y = this.get("y");
+    var tab = this.get("tab");
+    hive.send(["tabxy", tab, x, y]);
   }, 50));
 
 }());

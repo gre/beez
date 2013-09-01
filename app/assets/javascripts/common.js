@@ -22,8 +22,8 @@ beez.params = new beez.Parameters(_.map([
     id: "moddetune",
     name: "finetune",
     value: 0,
-    from: -100,
-    to: 100,
+    from: -20,
+    to: 20,
     tab: "modulator",
     axis: "x"
   },

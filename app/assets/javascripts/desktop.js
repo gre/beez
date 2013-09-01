@@ -8,14 +8,15 @@
   var audio = new beez.Audio();
 
   // Init Params
-  (function (params) {
+  var allAxis = (function (params) {
     var paramsNode = $params.empty();
-    _.each(params.groupBy("tab"), function (xyParams, tab) {
+    return new Backbone.Collection(_.map(params.groupBy("tab"), function (xyParams, tab) {
       var xP = _.find(xyParams, function (p) { return p.get("axis") === "x" });
       var yP = _.find(xyParams, function (p) { return p.get("axis") === "y" });
       if (!xP) throw "can't find param for x in tab "+tab;
       if (!yP) throw "can't find param for y in tab "+tab;
       var xyAxis = new beez.XYaxis({
+        id: tab,
         x: xP.getPercent(),
         y: yP.getPercent(),
         width: 160,
@@ -46,7 +47,9 @@
 
       });
       paramsNode.append(node);
-    });
+
+      return xyAxis;
+    }));
   }(beez.params));
 
   // Network
@@ -54,9 +57,11 @@
   var hive;
     var rtconmessage = function (msg) {
     switch (msg[0]) {
-    case "set": {
-        beez.params.get(msg[1]).setPercent(msg[2]);
-    }
+    case "tabxy":
+        allAxis.get(msg[1]).set({
+          x: msg[2],
+          y: msg[3]
+        });
         break;
     }
   }
