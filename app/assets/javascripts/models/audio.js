@@ -52,7 +52,7 @@ beez.Audio = Backbone.Model.extend({
 
     var mod = ctx.createOscillator();
     mod.type = "sine";
-    mod.detune.value = 8;
+    this.bindParam(beez.params.get("moddetune"), mod.detune);
     var modGain = ctx.createGainNode();
     this.bindParam(beez.params.get("modgain"), modGain.gain);
     mod.start(0);
@@ -115,11 +115,40 @@ beez.Audio = Backbone.Model.extend({
 
     this.output = compressor;
 
-    this.seq.on("schedule", function (noteFreq, time) {
-      var multiplicator = Math.round(4*beez.params.get("modmult").get("value"))/4;
-      carrier.frequency.setValueAtTime(noteFreq, time);
-      mod.frequency.setValueAtTime(noteFreq*multiplicator, time);
-    }, this);
+    (function (modmult, carriermult) {
+      var currentNoteFreq;
+
+      var DIV = 4;
+
+      function syncModMult (noteFreq, time) {
+        var multiplicator = Math.round(DIV*modmult.get("value"))/DIV;
+        if (multiplicator <= 0) multiplicator = 1/DIV;
+        mod.frequency.setValueAtTime(noteFreq*multiplicator, time);
+      }
+      function syncCarrierMult (noteFreq, time) {
+        var multiplicator = Math.round(DIV*carriermult.get("value"))/DIV;
+        if (multiplicator <= 0) multiplicator = 1/DIV;
+        carrier.frequency.setValueAtTime(noteFreq*multiplicator, time);
+      }
+
+      modmult.on("change:value", function () {
+        if (currentNoteFreq) {
+          syncModMult(currentNoteFreq, ctx.currentTime);
+        }
+      });
+      carriermult.on("change:value", function () {
+        if (currentNoteFreq) {
+          syncCarrierMult(currentNoteFreq, ctx.currentTime);
+        }
+      });
+
+      this.seq.on("schedule", function (noteFreq, time) {
+        currentNoteFreq = noteFreq;
+        syncCarrierMult(noteFreq, time);
+        syncModMult(noteFreq, time);
+      }, this);
+
+    }).call(this, beez.params.get("modmult"), beez.params.get("carriermult"));
 
   }
 });

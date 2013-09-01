@@ -77,13 +77,29 @@ beez.XYaxisMouseView = Backbone.View.extend({
 
     c.fillStyle = backgroundColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
-    c.lineWidth = 6;
+
+    c.lineWidth = 4;
     c.strokeStyle = "#789";
     c.strokeRect(0, 0, canvas.width, canvas.height);
 
     c.lineWidth = 1;
-    c.strokeRect(0, 0, canvas.width, canvas.height / 2 | 0);
-    c.strokeRect(0, 0, canvas.width / 2 |0, canvas.height);
+    for (var i=0; i<4; ++i) {
+      var x = Math.round(canvas.width*i/4);
+      c.globalAlpha = i%2==0 ? 1 : 0.2;
+      c.beginPath();
+      c.moveTo(x, 0);
+      c.lineTo(x, canvas.height);
+      c.stroke();
+    }
+    for (var i=0; i<4; ++i) {
+      var y = Math.round(canvas.height*i/4);
+      c.globalAlpha = i%2==0 ? 1 : 0.2;
+      c.beginPath();
+      c.moveTo(0, y);
+      c.lineTo(canvas.width, y);
+      c.stroke();
+    }
+    c.globalAlpha = 1;
 
     c.font = "11pt Helvetica, Arial, sans-serif";
 
@@ -96,6 +112,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.fillText(this.model.get("name"), (canvas.width - dimensions.width) / 2, (canvas.height  / 2) + 4);
 
     // Axis labels
+    c.save();
     c.font = "8pt Helvetica, Arial, sans-serif";
 
     dimensions = c.measureText(this.model.get("xlabel"));
@@ -105,8 +122,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.translate(12, dimensions.width + 6);
     c.rotate(-Math.PI / 2);
     c.fillText(this.model.get("ylabel"), 0, 0);
-    c.rotate(Math.PI / 2);
-    c.translate(-12, -(dimensions.width + 6));
+    c.restore();
 
     // Circle
     var radius = this.model.get("changing") ? 8 : 6;

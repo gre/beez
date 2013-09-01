@@ -91,29 +91,28 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     c.font = "20pt Helvetica, Arial, sans-serif";
     c.fillStyle = "#789";
 
-    var OFFSET = 30;
-    var OFFSET2 = 10;
-    dimensions = c.measureText(this.model.get("ylabel"));
-    c.fillText(this.model.get("ylabel"), canvas.width - dimensions.width - OFFSET2, OFFSET);
+    c.save();
+    dimensions = c.measureText(this.model.get("xlabel"));
+    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 10, canvas.height - 12);
 
-    c.translate(OFFSET, canvas.height - OFFSET2);
+    dimensions = c.measureText(this.model.get("ylabel"));
+    c.translate(26, dimensions.width + 12);
     c.rotate(-Math.PI / 2);
-    c.fillText(this.model.get("xlabel"), 0, 0);
-    c.rotate(Math.PI / 2);
-    c.translate(-OFFSET, -(canvas.height - OFFSET2));
+    c.fillText(this.model.get("ylabel"), 0, 0);
+    c.restore();
 
     // grid
     c.strokeStyle = "#666";
     c.lineWidth = 1;
     for (var i=0; i<10; ++i) {
-      var x = canvas.width*i/10;
+      var x = Math.round(canvas.width*i/10);
       c.beginPath();
       c.moveTo(x, 0);
       c.lineTo(x, canvas.height);
       c.stroke();
     }
     for (var i=0; i<10; ++i) {
-      var y = canvas.height*i/10;
+      var y = Math.round(canvas.height*i/10);
       c.beginPath();
       c.moveTo(0, y);
       c.lineTo(canvas.width, y);

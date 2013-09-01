@@ -12,18 +12,18 @@ beez.params = new beez.Parameters(_.map([
   {
     id: "carriergain",
     name: "gain",
-    value: 0,
+    value: 0.5,
     from: 0,
     to: 1,
     tab: "carrier",
     axis: "y"
   },
   {
-    id: "modmult",
-    name: "multiplicator",
-    value: 1,
-    from: 0.25,
-    to: 3,
+    id: "moddetune",
+    name: "finetune",
+    value: 0,
+    from: -100,
+    to: 100,
     tab: "modulator",
     axis: "x"
   },
@@ -34,6 +34,24 @@ beez.params = new beez.Parameters(_.map([
     from: 0,
     to: 500,
     tab: "modulator",
+    axis: "y"
+  },
+  {
+    id: "modmult",
+    name: "modulator",
+    value: 1,
+    from: 0,
+    to: 2,
+    tab: "FM multiplicator",
+    axis: "x"
+  },
+  {
+    id: "carriermult",
+    name: "carrier",
+    value: 1,
+    from: 0,
+    to: 2,
+    tab: "FM multiplicator",
     axis: "y"
   },
   {
