@@ -44,13 +44,34 @@ beez.Audio = Backbone.Model.extend({
     });
     this.seq.set("bpm", beez.params.get("bpm").get("value"));
 
-    var carrier = ctx.createOscillator();
+    var osc1 = ctx.createOscillator();
+    osc1.type = "sine";
+    osc1.start(0);
+    var osc1gain = ctx.createGainNode();
+    osc1gain.gain.value = 1.00;
+    osc1.connect(osc1gain);
 
-    carrier.type = "sine";
-    //this.bindParam(beez.params.get("carrierfreq"), carrier.frequency);
-    var carrierGain = ctx.createGainNode();
-    this.bindParam(beez.params.get("carriergain"), carrierGain.gain);
-    carrier.connect(carrierGain);
+    var osc2 = ctx.createOscillator();
+    osc2.type = "square";
+    osc2.detune.value = 1+12*100;
+    osc2.start(0);
+    var osc2gain = ctx.createGainNode();
+    osc2gain.gain.value = 0.02;
+    osc2.connect(osc2gain);
+
+    var osc3 = ctx.createOscillator();
+    osc3.type = "sawtooth";
+    osc3.detune.value = 1-12*100;
+    osc3.start(0);
+    var osc3gain = ctx.createGainNode();
+    osc3gain.gain.value = 0.05;
+    osc3.connect(osc3gain);
+
+    var oscsGain = ctx.createGainNode();
+    this.bindParam(beez.params.get("carriergain"), oscsGain.gain);
+    osc1gain.connect(oscsGain);
+    osc2gain.connect(oscsGain);
+    osc3gain.connect(oscsGain);
 
     var mod = ctx.createOscillator();
     mod.type = "sine";
@@ -59,12 +80,42 @@ beez.Audio = Backbone.Model.extend({
     this.bindParam(beez.params.get("modgain"), modGain.gain);
     mod.start(0);
     mod.connect(modGain);
-    modGain.connect(carrier.frequency);
+    modGain.connect(osc1.frequency);
+    modGain.connect(osc2.frequency);
+    modGain.connect(osc3.frequency);
+
+    var delay = (function (input) {
+      var left = ctx.createDelay();
+      left.delayTime.value = 0.002;
+      var right = ctx.createDelay();
+      right.delayTime.value = 0.003;
+
+      input.connect(left);
+      input.connect(right);
+
+      var merger = ctx.createChannelMerger();
+      left.connect(merger, 0, 0);
+      right.connect(merger, 0, 1);
+
+      var dry = ctx.createGainNode();
+      var wet = ctx.createGainNode();
+
+      merger.connect(wet);
+      input.connect(dry);
+
+      wet.gain.value = 0.3;
+      dry.gain.value = 1 - wet.gain.value;
+
+      var output = ctx.createGainNode();
+      wet.connect(output);
+      dry.connect(output);
+      return output;
+    }).call(this, oscsGain);
 
     var filter = ctx.createBiquadFilter();
     this.bindParam(beez.params.get("filterfreq"), filter.frequency);
     this.bindParam(beez.params.get("filterQ"), filter.Q);
-    carrierGain.connect(filter);
+    delay.connect(filter);
 
     // Reverbation now!
     var reverb = (function (nodeInput) {
@@ -89,7 +140,6 @@ beez.Audio = Backbone.Model.extend({
       this.bindParam(beez.params.get("reverbdry"), drygain.gain);
 
       buildImpulse(1);
-
       function buildImpulse (time) {
             // FIXME: need the audio context to rebuild the buffer.
          var rate = ctx.sampleRate,
@@ -106,11 +156,8 @@ beez.Audio = Backbone.Model.extend({
         }
         verb.buffer = impulse;
       }
-
       return output;
     }).call(this, filter);
-
-    carrier.start(0);
 
     var compressor = ctx.createDynamicsCompressor();
     reverb.connect(compressor);
@@ -140,7 +187,7 @@ beez.Audio = Backbone.Model.extend({
         var freqCarrier = noteFreq * valueToMult(carriermult.get("value"));
         if (freqCarrier === currentFreqCarrier) return;
         currentFreqCarrier = freqCarrier;
-        carrier.frequency.setValueAtTime(freqCarrier, time);
+        osc1.frequency.setValueAtTime(freqCarrier, time);
       }
       function syncMults (noteFreq, time) {
         syncCarrierMult(noteFreq, time);
@@ -161,6 +208,8 @@ beez.Audio = Backbone.Model.extend({
       this.seq.on("schedule", function (noteFreq, time) {
         currentNoteFreq = noteFreq;
         syncMults(noteFreq, time);
+        osc2.frequency.setValueAtTime(noteFreq, time);
+        osc3.frequency.setValueAtTime(noteFreq, time);
       }, this);
 
     }).call(this, beez.params.get("modmult"), beez.params.get("carriermult"));

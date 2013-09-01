@@ -83,6 +83,9 @@
     });
     $(document.body).toggleClass("stopped", !audio.get("started"));
   });
+  $(window).on("blur", function () {
+    audio.stop();
+  });
   audio.init();
   waveform.setNode(audio.output, audio.ctx);
   audio.start();
