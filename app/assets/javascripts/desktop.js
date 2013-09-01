@@ -18,7 +18,7 @@
       var xyAxis = new beez.XYaxis({
         x: xP.getPercent(),
         y: yP.getPercent(),
-        width: 150,
+        width: 160,
         height: XY_AXIS_HEIGHT,
         name: tab,
         xlabel: xP.get("name"),
@@ -80,7 +80,7 @@
   var waveformView = new beez.WaveformView({
     model: waveform,
     el: $("#waveform"),
-    marginBottom: XY_AXIS_HEIGHT-40
+    marginBottom: XY_AXIS_HEIGHT-50
   });
 
   // Starting the Audio

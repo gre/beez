@@ -1,6 +1,8 @@
 beez.XYaxisMouseView = Backbone.View.extend({
   initialize: function () {
     this.canvas = document.createElement("canvas");
+    this.canvas.style.width = "100%";
+    this.canvas.style.height = "100%";
     this.$el.append(this.canvas);
     this.ctx = this.canvas.getContext("2d");
     this.listenTo(this.model, "change:width change:height", this.syncSize);
@@ -29,8 +31,8 @@ beez.XYaxisMouseView = Backbone.View.extend({
     if (!this.down) return;
 
     var offset = this.$el.offset(),
-        x = (e.clientX - offset.left)/this.canvas.width,
-        y = (e.clientY - offset.top)/this.canvas.height;
+        x = (e.clientX - offset.left)/this.canvas.width*2,
+        y = (e.clientY - offset.top)/this.canvas.height*2;
 
     this.model.set({
       x: x,
@@ -59,8 +61,12 @@ beez.XYaxisMouseView = Backbone.View.extend({
   },
 
   syncSize: function () {
-    this.canvas.width = this.model.get("width");
-    this.canvas.height = this.model.get("height");
+    var w = this.model.get("width");
+    var h = this.model.get("height");
+    this.el.style.width = w+"px";
+    this.el.style.height = h+"px";
+    this.canvas.width = w*2;
+    this.canvas.height = h*2;
   },
 
   syncParam: function () {
@@ -78,11 +84,11 @@ beez.XYaxisMouseView = Backbone.View.extend({
     c.fillStyle = backgroundColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
 
-    c.lineWidth = 4;
+    c.lineWidth = 8;
     c.strokeStyle = "#789";
     c.strokeRect(0, 0, canvas.width, canvas.height);
 
-    c.lineWidth = 1;
+    c.lineWidth = 2;
     for (var i=0; i<4; ++i) {
       var x = Math.round(canvas.width*i/4);
       c.globalAlpha = i%2==0 ? 1 : 0.2;
@@ -101,32 +107,32 @@ beez.XYaxisMouseView = Backbone.View.extend({
     }
     c.globalAlpha = 1;
 
-    c.font = "bold 10pt Helvetica, Arial, sans-serif";
+    c.font = "bold 20pt Helvetica, Arial, sans-serif";
 
     // Main label
     var dimensions = c.measureText(this.model.get("name"));
     c.fillStyle = backgroundColor;
-    c.fillRect((canvas.width - dimensions.width) / 2 - 5, (canvas.height  / 2) - 10, dimensions.width + 10, 20);
+    c.fillRect((canvas.width - dimensions.width) / 2 - 10, (canvas.height  / 2) - 20, dimensions.width + 20, 40);
 
     c.fillStyle = "#789";
-    c.fillText(this.model.get("name"), (canvas.width - dimensions.width) / 2, (canvas.height  / 2) + 4);
+    c.fillText(this.model.get("name"), (canvas.width - dimensions.width) / 2, (canvas.height  / 2) + 8);
 
     // Axis labels
     c.save();
-    c.font = "8pt Helvetica, Arial, sans-serif";
+    c.font = "16pt Helvetica, Arial, sans-serif";
 
     dimensions = c.measureText(this.model.get("xlabel"));
-    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 5, canvas.height - 7);
+    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 10, canvas.height - 14);
 
     dimensions = c.measureText(this.model.get("ylabel"));
-    c.translate(12, dimensions.width + 6);
+    c.translate(24, dimensions.width + 12);
     c.rotate(-Math.PI / 2);
     c.fillText(this.model.get("ylabel"), 0, 0);
     c.restore();
 
     // Circle
-    var radius = this.model.get("changing") ? 8 : 6;
-    c.lineWidth = this.model.get("changing") ? 8 : 4;
+    var radius = this.model.get("changing") ? 16 : 12;
+    c.lineWidth = this.model.get("changing") ? 12 : 8;
     c.strokeStyle = "hsl(0, 50%, 50%)";
     c.beginPath();
     c.arc(canvas.width * this.model.get("x"), canvas.height * (1 - this.model.get("y")), radius, 0, Math.PI * 2, false);
