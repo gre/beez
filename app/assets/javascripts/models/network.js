@@ -6,9 +6,8 @@
 // methods: send(jsobject)
 // event: "data", {jsobject} // when receiving data
 
-console = console || {log: function(){}};
 function trace(text) {
-    //console.log(((new Date()).getTime() / 1000) + ": " + text);
+    // console.log(((new Date()).getTime() / 1000) + ": " + text);
 }
 
 function logError(error) {
@@ -16,6 +15,9 @@ function logError(error) {
 }
 
 beez.Peer = Backbone.Model.extend({
+    options: {
+      servers: {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]}
+    },
     initialize: function(options) {
         this.hivebroker = options.hivebroker;
         this.beepeerbroker = options.beepeerbroker;
@@ -26,7 +28,7 @@ beez.Peer = Backbone.Model.extend({
         //this.sendChannel = null;
     },
     createConnection: function(isinitiator) {
-      var servers = {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]};
+      var servers = this.get("servers");
       this.localPeerConnection = new webkitRTCPeerConnection(servers,{optional: [{RtpDataChannels: true}]});
       trace('Created local peer connection object localPeerConnection');
 
@@ -132,23 +134,34 @@ beez.Peer = Backbone.Model.extend({
 });
 
 beez.HiveBroker = Backbone.Model.extend({
-    initialize: function (options) {
-        this.id = options.id;
+    initialize: function () {
         this.peers = new Backbone.Collection();
-        this.ws = options.ws;
+        this.ws = new WebSocket(this.get("wsUrl"));
+        this.ws.onclose = _.bind(this.onclose, this);
+        this.ws.onopen = _.bind(this.onopen, this);
         this.ws.onmessage = _.bind(this.onmessage, this);
-        this.messagecallback = options.onmessage;
     },
-    // json: { client_id: 123, data: {} }
+    onopen: function () {
+      console.log("WS open");
+      this.trigger("connect");
+    },
+    onclose: function () {
+      console.log("WS close");
+      this.trigger("disconnect");
+    },
     onmessage: function(event) {
-        trace('Hive: receive json ')
+        trace('Hive: receive json '+event.data)
         var json = JSON.parse(event.data);
         var peer = this.peers.get(json.from);
 
         if (peer) {
             peer.trigger("message", json.data);
         } else {
-            var peer = new beez.Peer({id: json.from, hivebroker: this, isinitiator: false});
+            var peer = new beez.Peer({
+              id: json.from,
+              hivebroker: this,
+              isinitiator: false
+            });
             this.peers.add(peer);
             peer.trigger("message", json.data);
         }
@@ -158,17 +171,35 @@ beez.HiveBroker = Backbone.Model.extend({
 
         this.ws.send(JSON.stringify( {"to": id, "data": json} ));
     },
+    send: function (json) {
+      this.peers.each(function (peer) {
+        this.peer.rtcsend(json);
+      });
+    },
     onrtcmessage: function(data) {
-        this.messagecallback(JSON.parse(data));
+        this.trigger("data", JSON.parse(data));
     }
 });
 
 beez.BeePeerBroker = Backbone.Model.extend({
-    initialize: function (options) {
-        this.ws = options.ws;
+    initialize: function () {
+        this.ws = new WebSocket(this.get("wsUrl"));
+        this.ws.onclose = _.bind(this.onclose, this);
+        this.ws.onopen = _.bind(this.onopen, this);
         this.ws.onmessage = _.bind(this.onmessage, this);
-        this.peer = new beez.Peer({id: options.id, beepeerbroker: this, isinitiator: true});
-        this.messagecallback = options.onmessage;
+    },
+    onopen: function () {
+      console.log("WS open");
+      this.peer = new beez.Peer({
+        id: this.get("id"),
+        beepeerbroker: this,
+        isinitiator: true
+      });
+      this.trigger("connect");
+    },
+    onclose: function () {
+      console.log("WS close");
+      this.trigger("disconnect");
     },
     onmessage: function(event) {
         var json = JSON.parse(event.data);
@@ -178,7 +209,7 @@ beez.BeePeerBroker = Backbone.Model.extend({
     },
     wssend: function(id, json) {
         trace("send data over websocket: " + JSON.stringify(json));
-        this.ws.send(JSON.stringify( {"to": PEER_HIVE_ID, "data": json} ));
+        this.ws.send(JSON.stringify( {"to": this.get("id"), "data": json} ));
     },
     send: function(json) {
         try {
@@ -186,7 +217,7 @@ beez.BeePeerBroker = Backbone.Model.extend({
         } catch(e) {
         }
     },
-    onrtcmessage: function(data) {
-        this.messagecallback(data);
+    onrtcmessage: function (data) {
+        this.trigger("data", JSON.parse(data));
     }
 });

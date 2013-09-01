@@ -1,8 +1,13 @@
 (function(){
 
   var XY_AXIS_HEIGHT = 120;
-
   var $params = $("#params");
+
+  // Network
+  var hive = new beez.HiveBroker({
+    wsUrl: WEBSOCKET_ENDPOINT,
+    id: PEER_HIVE_ID
+  });
 
   // Init Audio
   var audio = new beez.Audio();
@@ -52,23 +57,6 @@
     }));
   }(beez.params));
 
-  // Network
-  var ws = new WebSocket(WEBSOCKET_ENDPOINT);
-  var hive;
-    var rtconmessage = function (msg) {
-    switch (msg[0]) {
-    case "tabxy":
-        allAxis.get(msg[1]).set({
-          x: msg[2],
-          y: msg[3]
-        });
-        break;
-    }
-  }
-  ws.onopen = function() {
-    hive = new beez.HiveBroker({ws: ws, onmessage: rtconmessage});
-  }
-
   /// init Waveform
   var waveform = new beez.Waveform({
     sampling: 1024
@@ -98,5 +86,26 @@
   waveform.setNode(audio.output, audio.ctx);
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);
+
+  hive.on("data", function (msg) {
+    switch (msg[0]) {
+    case "tabopen":
+      var tab = msg[1];
+      var axis = allAxis.get(tab);
+      hive.send([ "tabxy", tab, axis.get("x"), axis.get("y") ]);
+      break;
+    case "tabxy":
+      allAxis.get(msg[1]).set({
+        x: msg[2],
+        y: msg[3]
+      });
+      break;
+    case "tabxychanging":
+      allAxis.get(msg[1]).set({
+        changing: msg[2]
+      });
+      break;
+    }
+  });
 
 }());

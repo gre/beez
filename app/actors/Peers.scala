@@ -23,7 +23,7 @@ object PeersActor {
   case class Talk(id: String, to: String, data: JsValue) extends PeersEvent
   case class Quit(id: String)
 
-  lazy val ref = Akka.system.actorOf(Props[PeersActor])
+  lazy val ref = Akka.system.actorOf(Props(new PeersActor("_hive_")))
 
   implicit val timeout = Timeout(5 second)
 
@@ -55,14 +55,12 @@ object PeersActor {
   }
 }
 
-class PeersActor extends Actor {
+class PeersActor(serverId: String) extends Actor {
   import PeersActor._
 
   private var peers: Map[String, Channel[JsValue]] = Map.empty
   private var serverChannel: Option[Channel[JsValue]] = None
   private var serverEnumerator: Option[Enumerator[JsValue]] = None
-
-  val serverId = "_hive_"
 
   def isServer(id: String) = serverId == id
 
@@ -73,6 +71,10 @@ class PeersActor extends Actor {
       () => Logger.warn("Hive channel has been closed properly."),
       (error, _) => Logger.error("Unexepected error with the hive channel :(")
     )
+    peers.map { case (id, peer) =>
+      peer.eofAndEnd()
+    }
+    peers = Map.empty
     serverEnumerator = Some(out)
     serverEnumerator
   }
@@ -93,18 +95,35 @@ class PeersActor extends Actor {
   def receive = {
     case Join(id) => {
       val s = sender
-      serverEnumerator.map { out =>
-        if(!peers.get(id).isDefined) {
-          s ! Connected(newPeer(id))
-        } else {
-          s ! CannotConnect("This ID is alaready taken !")
+      if (id == serverId) {
+        serverChannel.map { channel =>
+          channel.eofAndEnd()
         }
-      } getOrElse {
-        if(id == serverId) {
-          s ! Connected(initServer().get)
-        } else {
+        s ! Connected(initServer().get)
+      }
+      else {
+        serverEnumerator.map { out =>
+          if(!peers.get(id).isDefined) {
+            s ! Connected(newPeer(id))
+          } else {
+            s ! CannotConnect("This ID is already taken !")
+          }
+        } getOrElse {
           s ! CannotConnect("No server connected")
         }
+      }
+    }
+
+    case Quit(id) => {
+      if (id == serverId) {
+        peers.map { case (id, peer) =>
+          peer.eofAndEnd()
+        }
+        peers = Map.empty
+        serverEnumerator = None
+      }
+      else {
+        peers -= id
       }
     }
 
