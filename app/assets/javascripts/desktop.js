@@ -45,7 +45,7 @@
         yP.setPercent(value);
       });
 
-      var node = $("<div />");
+      var node = $('<div class="xyaxis" />');
       var view = new beez.XYaxisMouseView({
         model: xyAxis,
         el: node
@@ -81,6 +81,7 @@
     audio.toggle(function () {
       waveform.setNode(audio.output, audio.ctx);
     });
+    $(document.body).toggleClass("stopped", !audio.get("started"));
   });
   audio.init();
   waveform.setNode(audio.output, audio.ctx);

@@ -1,10 +1,5 @@
-
-// idea of Backbone.Model:
-// HivePeer
-// BeePeer
-// events: connect / disconnect
-// methods: send(jsobject)
-// event: "data", {jsobject} // when receiving data
+(function(){
+// FIXME: clean code, make it more Backbone compatible, improve the connect/disconnect event.
 
 function trace(text) {
     // console.log(((new Date()).getTime() / 1000) + ": " + text);
@@ -210,3 +205,5 @@ beez.BeePeerBroker = Backbone.Model.extend({
       } catch(e) {}
     }
 });
+
+}());

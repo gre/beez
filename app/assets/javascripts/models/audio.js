@@ -10,11 +10,13 @@ beez.Audio = Backbone.Model.extend({
   start: function () {
     this.output.connect(this.ctx.destination);
     this.seq.play();
+    this.set("started", true);
   },
 
   stop: function () {
     this.output.disconnect(this.ctx.destination);
     this.seq.stop();
+    this.set("started", false);
   },
 
   toggle: function (cb) {
