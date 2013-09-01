@@ -101,7 +101,7 @@ beez.XYaxisMouseView = Backbone.View.extend({
     }
     c.globalAlpha = 1;
 
-    c.font = "11pt Helvetica, Arial, sans-serif";
+    c.font = "bold 10pt Helvetica, Arial, sans-serif";
 
     // Main label
     var dimensions = c.measureText(this.model.get("name"));

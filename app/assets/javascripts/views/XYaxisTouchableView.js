@@ -22,12 +22,23 @@ beez.XYaxisTouchableView = Backbone.View.extend({
         return e.changedTouches[i];
   },
 
+  getPosition: function (touch) {
+    var width = this.model.get("width");
+    var height = this.model.get("height");
+    var x = Math.max(0, Math.min(touch.clientX, width)) / width;
+    var y = Math.max(0, Math.min(touch.clientY-OFFSET_Y+10, height)) / height;
+    return { x: x, y: 1-y };
+  },
+
   onTouchstart: function (e) {
     e.preventDefault();
     if (this.identifier !== null) return;
     var touch = e.changedTouches[0];
     this.identifier = touch.identifier;
+    var position = this.getPosition(touch);
     this.model.set({
+      x: position.x,
+      y: position.y,
       changing: true
     });
   },
@@ -36,13 +47,10 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     if (this.identifier === null) return;
     var touch = this.getCurrentTouch(e);
     if (!touch) return;
-    var width = this.model.get("width");
-    var height = this.model.get("height");
-    var x = Math.max(0, Math.min(touch.clientX, width)) / width;
-    var y = Math.max(0, Math.min(touch.clientY-OFFSET_Y+10, height)) / height;
+    var position = this.getPosition(touch);
     this.model.set({
-      x: x,
-      y: 1 - y
+      x: position.x,
+      y: position.y
     });
   },
   

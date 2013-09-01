@@ -16,6 +16,8 @@
       var xyAxis = new beez.XYaxis({
         x: xP.getPercent(),
         y: yP.getPercent(),
+        width: 150,
+        height: 120,
         name: tab,
         xlabel: xP.get("name"),
         ylabel: yP.get("name")
@@ -39,6 +41,7 @@
       var view = new beez.XYaxisMouseView({
         model: xyAxis,
         el: node
+
       });
       paramsNode.append(node);
     });
