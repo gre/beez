@@ -23,13 +23,21 @@ footer > div {
 #tabs {
   width: 100%;
   height: 40px;
-  background: #aaa;
+  background: #abc;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
 }
 
 #tabs .tab {
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  border-top: 4px #123 solid;
+  background: #bcd;
   display: inline-block;
   padding: 0 5px;
-  line-height: 40px;
+  line-height: 36px;
   height: 40px;
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -37,10 +45,15 @@ footer > div {
   font-family: sans-serif;
   font-size: 10px;
 }
+#tabs .tab:nth-child(odd) {
+  border-top: 4px #345 solid;
+}
 
 #tabs .tab.active {
-  background: #000;
-  color: #fff;
+  border-top: 2px #abc solid;
+  border-bottom: none;
+  background: #123;
+  color: #DEF;
 }
 
 #touchviewport {

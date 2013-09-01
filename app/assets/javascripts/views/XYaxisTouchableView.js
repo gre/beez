@@ -86,7 +86,7 @@ beez.XYaxisTouchableView = Backbone.View.extend({
   render: function () {
     var c = this.ctx,
         canvas = this.canvas,
-        backgroundColor = "#000";
+        backgroundColor = "#123";
 
     c.fillStyle = backgroundColor;
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -99,33 +99,40 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     c.font = "20pt Helvetica, Arial, sans-serif";
     c.fillStyle = "#789";
 
-    c.save();
-    dimensions = c.measureText(this.model.get("xlabel"));
-    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 10, canvas.height - 12);
-
-    dimensions = c.measureText(this.model.get("ylabel"));
-    c.translate(26, dimensions.width + 12);
-    c.rotate(-Math.PI / 2);
-    c.fillText(this.model.get("ylabel"), 0, 0);
-    c.restore();
-
     // grid
     c.strokeStyle = "#666";
     c.lineWidth = 1;
-    for (var i=0; i<10; ++i) {
+    for (var i=1; i<10; ++i) {
       var x = Math.round(canvas.width*i/10);
       c.beginPath();
       c.moveTo(x, 0);
       c.lineTo(x, canvas.height);
       c.stroke();
     }
-    for (var i=0; i<10; ++i) {
+    for (var i=1; i<10; ++i) {
       var y = Math.round(canvas.height*i/10);
       c.beginPath();
       c.moveTo(0, y);
       c.lineTo(canvas.width, y);
       c.stroke();
     }
+
+    // labels
+    c.fillStyle = backgroundColor;
+    var xdim = c.measureText(this.model.get("xlabel"));
+    c.fillRect(0, 0, 40, xdim.width+20);
+    var ydim = c.measureText(this.model.get("ylabel"));
+    c.fillRect(canvas.width-ydim.width-12, canvas.height-36, ydim.width+12, 36);
+
+    c.save();
+    c.fillStyle = "#789";
+    dimensions = c.measureText(this.model.get("xlabel"));
+    c.fillText(this.model.get("xlabel"), canvas.width - dimensions.width - 10, canvas.height - 12);
+    dimensions = c.measureText(this.model.get("ylabel"));
+    c.translate(26, dimensions.width + 12);
+    c.rotate(-Math.PI / 2);
+    c.fillText(this.model.get("ylabel"), 0, 0);
+    c.restore();
 
     // pointer
     c.strokeStyle = !this.model.get("changing") ? "#fff" : "#ace";

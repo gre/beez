@@ -8,7 +8,7 @@
     hive = new beez.BeePeerBroker({ws: ws});
   }
 
-  OFFSET_Y = 50;
+  OFFSET_Y = 40;
 
   var $tabs = $("#tabs");
   var $xyaxis = $("#xyaxis");
@@ -26,6 +26,8 @@
     });
     tabs.add(tab);
   });
+
+  $tabs.find(".tab").css("width", (Math.floor(1000/tabs.size())/10)+"%");
 
   var xyAxis = new beez.XYaxis({});
   var xyAxisView;
