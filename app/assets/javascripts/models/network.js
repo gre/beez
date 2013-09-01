@@ -178,7 +178,7 @@ beez.BeePeerBroker = Backbone.Model.extend({
     },
     wssend: function(id, json) {
         trace("send data over websocket: " + JSON.stringify(json));
-        this.ws.send(JSON.stringify( {"to": "123456789", "data": json} ));
+        this.ws.send(JSON.stringify( {"to": PEER_HIVE_ID, "data": json} ));
     },
     send: function(json) {
         try {

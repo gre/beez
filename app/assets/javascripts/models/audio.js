@@ -44,7 +44,7 @@ beez.Audio = Backbone.Model.extend({
 
     var carrier = ctx.createOscillator();
 
-    carrier.type = "triangle";
+    carrier.type = "sine";
     //this.bindParam(beez.params.get("carrierfreq"), carrier.frequency);
     var carrierGain = ctx.createGainNode();
     this.bindParam(beez.params.get("carriergain"), carrierGain.gain);
@@ -126,13 +126,19 @@ beez.Audio = Backbone.Model.extend({
         return mul;
       }
 
+      var currentFreqMod;
       function syncModMult (noteFreq, time) {
-        var multiplicator = valueToMult(modmult.get("value"));
-        mod.frequency.setValueAtTime(noteFreq*multiplicator, time);
+        var freqMod = noteFreq * valueToMult(modmult.get("value"));
+        if (freqMod === currentFreqMod) return;
+        currentFreqMod = freqMod;
+        mod.frequency.setValueAtTime(freqMod, time);
       }
+      var currentFreqCarrier;
       function syncCarrierMult (noteFreq, time) {
-        var multiplicator = valueToMult(carriermult.get("value"));
-        carrier.frequency.setValueAtTime(noteFreq*multiplicator, time);
+        var freqCarrier = noteFreq * valueToMult(carriermult.get("value"));
+        if (freqCarrier === currentFreqCarrier) return;
+        currentFreqCarrier = freqCarrier;
+        carrier.frequency.setValueAtTime(freqCarrier, time);
       }
       function syncMults (noteFreq, time) {
         syncCarrierMult(noteFreq, time);
