@@ -26,7 +26,7 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     var width = this.model.get("width");
     var height = this.model.get("height");
     var x = Math.max(0, Math.min(touch.clientX, width)) / width;
-    var y = Math.max(0, Math.min(touch.clientY-OFFSET_Y+10, height)) / height;
+    var y = Math.max(0, Math.min(touch.clientY-OFFSET_Y, height)) / height;
     return { x: x, y: 1-y };
   },
 
@@ -96,26 +96,30 @@ beez.XYaxisTouchableView = Backbone.View.extend({
 
 
     // Axis labels
-    c.font = "20pt Helvetica, Arial, sans-serif";
+    c.font = "16pt Helvetica, Arial, sans-serif";
     c.fillStyle = "#789";
 
     // grid
-    c.strokeStyle = "#666";
+    c.strokeStyle = "#789";
     c.lineWidth = 1;
-    for (var i=1; i<10; ++i) {
-      var x = Math.round(canvas.width*i/10);
+    var GRID = 8;
+    for (var i=1; i<GRID; ++i) {
+      var x = Math.round(canvas.width*i/GRID);
+      c.globalAlpha = i==GRID/2 ? 1 : i%2==0 ? 0.5 : 0.2;
       c.beginPath();
       c.moveTo(x, 0);
       c.lineTo(x, canvas.height);
       c.stroke();
     }
-    for (var i=1; i<10; ++i) {
-      var y = Math.round(canvas.height*i/10);
+    for (var i=1; i<GRID; ++i) {
+      var y = Math.round(canvas.height*i/GRID);
+      c.globalAlpha = i==GRID/2 ? 1 : i%2==0 ? 0.5 : 0.2;
       c.beginPath();
       c.moveTo(0, y);
       c.lineTo(canvas.width, y);
       c.stroke();
     }
+    c.globalAlpha = 1;
 
     // labels
     c.fillStyle = backgroundColor;
@@ -135,8 +139,10 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     c.restore();
 
     // pointer
-    c.strokeStyle = !this.model.get("changing") ? "#fff" : "#ace";
-    c.lineWidth = !this.model.get("changing") ? 3 : 6;
+    c.save();
+    c.shadowBlur = 6;
+    c.shadowColor = c.strokeStyle = !this.model.get("changing") ? "#fff" : "#9cf";
+    c.lineWidth = !this.model.get("changing") ? 2 : 6;
     var x = canvas.width * this.model.get("x");
     var y = canvas.height * (1-this.model.get("y"));
     c.beginPath();
@@ -147,8 +153,7 @@ beez.XYaxisTouchableView = Backbone.View.extend({
     c.moveTo(0, y);
     c.lineTo(canvas.width, y);
     c.stroke();
-
-
+    c.restore();
   }
 });
 
