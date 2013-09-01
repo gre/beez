@@ -19,12 +19,9 @@ beez.Peer = Backbone.Model.extend({
       servers: {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]}
     },
     initialize: function(options) {
-        this.hivebroker = options.hivebroker;
-        this.beepeerbroker = options.beepeerbroker;
-        this.isinitiator = options.isinitiator;
         this.on("message", this.onmessage, this);
         this.localPeerConnection = null;
-        this.createConnection(this.isinitiator);
+        this.createConnection(options.isinitiator);
         //this.sendChannel = null;
     },
     createConnection: function(isinitiator) {
@@ -76,11 +73,7 @@ beez.Peer = Backbone.Model.extend({
         }
     },
     signalingChannelSend: function(data) {
-        if (this.isinitiator) {
-            this.beepeerbroker.wssend(this.id, data);
-        } else {
-            this.hivebroker.wssend(this.id, data);
-        }
+      this.get("wssend")(this.id, data);
     },
     // Send stuff
     gotLocalDescription: function (desc) {
@@ -102,15 +95,12 @@ beez.Peer = Backbone.Model.extend({
 
     handleMessage: function (event) {
       trace('Received message: ' + event.data);
-      if (this.hivebroker)
-        this.hivebroker.onrtcmessage(event.data);
+      this.trigger("rtcmessage", JSON.parse(event.data));
     },
 
     handleSendChannelStateChange: function () {
       var readyState = this.sendChannel.readyState;
-      if (readyState == "open") {
-          //console.log("webrtc connection establshed!");
-      }
+      this.trigger(readyState);
       trace('Send channel state is: ' + readyState);
     },
     // For not initiator only
@@ -142,11 +132,11 @@ beez.HiveBroker = Backbone.Model.extend({
         this.ws.onmessage = _.bind(this.onmessage, this);
     },
     onopen: function () {
-      console.log("WS open");
+      trace("WS open");
       this.trigger("connect");
     },
     onclose: function () {
-      console.log("WS close");
+      trace("WS close");
       this.trigger("disconnect");
     },
     onmessage: function(event) {
@@ -159,10 +149,13 @@ beez.HiveBroker = Backbone.Model.extend({
         } else {
             var peer = new beez.Peer({
               id: json.from,
-              hivebroker: this,
+              wssend: _.bind(this.wssend, this),
               isinitiator: false
             });
             this.peers.add(peer);
+            peer.on("rtcmessage", function (message) {
+              this.trigger("data", message);
+            }, this);
             peer.trigger("message", json.data);
         }
     },
@@ -173,11 +166,8 @@ beez.HiveBroker = Backbone.Model.extend({
     },
     send: function (json) {
       this.peers.each(function (peer) {
-        this.peer.rtcsend(json);
+        peer.rtcsend(json);
       });
-    },
-    onrtcmessage: function(data) {
-        this.trigger("data", JSON.parse(data));
     }
 });
 
@@ -189,16 +179,19 @@ beez.BeePeerBroker = Backbone.Model.extend({
         this.ws.onmessage = _.bind(this.onmessage, this);
     },
     onopen: function () {
-      console.log("WS open");
+      trace("WS open");
       this.peer = new beez.Peer({
         id: this.get("id"),
-        beepeerbroker: this,
+        wssend: _.bind(this.wssend, this),
         isinitiator: true
       });
+      this.peer.on("rtcmessage", function (message) {
+        this.trigger("data", message);
+      }, this);
       this.trigger("connect");
     },
     onclose: function () {
-      console.log("WS close");
+      trace("WS close");
       this.trigger("disconnect");
     },
     onmessage: function(event) {
@@ -212,12 +205,8 @@ beez.BeePeerBroker = Backbone.Model.extend({
         this.ws.send(JSON.stringify( {"to": this.get("id"), "data": json} ));
     },
     send: function(json) {
-        try {
-            this.peer.rtcsend(json);
-        } catch(e) {
-        }
-    },
-    onrtcmessage: function (data) {
-        this.trigger("data", JSON.parse(data));
+      try {
+        this.peer.rtcsend(json);
+      } catch(e) {}
     }
 });

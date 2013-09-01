@@ -6,10 +6,6 @@
     id: PEER_HIVE_ID
   });
 
-  hive.on("disconnect", function () {
-    $("#disconnect").show();
-  });
-
   OFFSET_Y = 40;
 
   var $tabs = $("#tabs");
@@ -72,8 +68,6 @@
     });
   });
 
-  tabs.first().trigger("tap", tabs.first());
-
   xyAxis.on("change:changing", function (m, moving) {
     hive.send(["tabxychanging", this.get("tab"), moving]);
   });
@@ -84,6 +78,15 @@
     var tab = this.get("tab");
     hive.send(["tabxy", tab, x, y]);
   }, 50));
+
+  hive.on("connect", function () {
+    $("#connect").hide();
+    tabs.first().trigger("tap", tabs.first());
+  });
+
+  hive.on("disconnect", function () {
+    $("#disconnect").show();
+  });
 
   hive.on("data", function (msg) {
     switch (msg[0]) {
