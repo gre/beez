@@ -13,11 +13,11 @@ An Hive is controlled by different Bees, eventhing connected in Peer-to-Peer (vi
 The **Hive** is a web page where the sound is generated and visualized *(WebAudioAPI)*.
 It also show you in real-time the different effects XY pads and allows you to control them.
 
-![screen shot 2013-08-31 at 5 30 52 pm](https://f.cloud.github.com/assets/211411/1062500/0057331c-1253-11e3-9374-24f94f299edb.png)
+![screen shot 2013-09-02 at 9 03 38 pm](https://f.cloud.github.com/assets/211411/1068935/acc96222-1402-11e3-9ecf-080c75eea981.png)
 
 ### A Bee
 
 The **Bee** is a mobile web page which allows you to control the different sound effects with XY pads.
 Only works on Android Chrome now *(WebRTC required)*.
 
-![screen shot 2013-08-31 at 5 31 55 pm](https://f.cloud.github.com/assets/211411/1062501/00856a70-1253-11e3-9294-4ffa69b32b9f.png)
+![screen shot 2013-09-02 at 9 04 58 pm](https://f.cloud.github.com/assets/211411/1068936/ace55b9e-1402-11e3-928f-93709f90330f.png)
