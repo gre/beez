@@ -59,7 +59,7 @@
 
   /// init Waveform
   var waveform = new beez.Waveform({
-    sampling: 1024
+    sampling: 512
   });
   function syncWaveformSize () {
     waveform.set({
