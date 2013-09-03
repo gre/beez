@@ -4,10 +4,64 @@
   var $params = $("#params");
 
   // Network
-  var hive = new beez.HiveBroker({
-    wsUrl: WEBSOCKET_ENDPOINT,
-    id: PEER_HIVE_ID
+  var peers = new Backbone.Collection();
+  var peersReady = new Backbone.Collection();
+  peers.on("add", function (peer) {
+    peer.on("open", function () {
+      peersReady.add(peer);
+    });
   });
+  peers.on("remove", function (peer) {
+    peersReady.remove(peer);
+  });
+
+  var controlNetwork = new beez.WebSocketControl({
+    url: WEBSOCKET_ENDPOINT
+  });
+
+  controlNetwork.on({
+    "open": function () {
+    },
+    "close": function () {
+    },
+    "receive-data": function (json) {
+      var peer = peers.get(json.from);
+      if (!peer) {
+        peer = new beez.Peer({
+          id: json.from,
+          wssend: _.bind(this.wssend, this),
+          isinitiator: false
+        });
+        peers.add(peer);
+      }
+      peer.trigger("message", json.data);
+    },
+    "receive-connect": function (json) {
+      peers.add(
+          new beez.Peer({
+            id: json.id,
+            wssend: _.bind(this.wssend, this),
+            isinitiator: true
+          })
+      );
+    },
+    "receive-disconnect": function (json) {
+      peers.remove(json.id);
+    }
+  });
+
+  peersReady.on("rtcmessage", function (message, peer) {
+    console.log("receive: "+message+" from "+peer.id);
+    if (message[0] == "ping") {
+      peer.send(["pong", Date.now()]);
+    }
+  });
+
+  setInterval(function () {
+    peersReady.each(function (peer) {
+      peer.send(["ping", Date.now()]);
+    });
+  }, 1000);
 
   // Init Audio
   var audio = new beez.Audio();
@@ -91,12 +145,14 @@
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);
 
-  hive.on("data", function (msg) {
+  peers.on("data", function (msg) {
     switch (msg[0]) {
     case "tabopen":
       var tab = msg[1];
       var axis = allAxis.get(tab);
-      hive.send([ "tabxy", tab, axis.get("x"), axis.get("y") ]);
+      peers.each(function (peer) {
+        peer.send([ "tabxy", tab, axis.get("x"), axis.get("y") ]);
+      });
       break;
     case "tabxy":
       allAxis.get(msg[1]).set({

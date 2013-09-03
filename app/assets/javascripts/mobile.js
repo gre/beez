@@ -2,8 +2,7 @@
 
   // Network
   var hive = new beez.BeePeerBroker({
-    wsUrl: WEBSOCKET_ENDPOINT,
-    id: PEER_HIVE_ID
+    wsUrl: WEBSOCKET_ENDPOINT
   });
 
   OFFSET_Y = 40;
