@@ -6,9 +6,48 @@
   <meta charset="UTF-8">
   <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
   <title>Beez</title>
+  <style type="text/css">
+  body {
+    background: #000;
+    color: #fff;
+  }
+  ul, li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+  }
+  a {
+    color: #123;
+    background: #def;
+    padding: 5px 10px;
+    margin: 5px;
+    text-decoration: none;
+    line-height: 2em;
+    font-size: 2em;
+    font-family: sans-serif;
+    min-width: 300px;
+    display: inline-block;
+  }
+  </style>
 </head>
 <body>
-  <a href="@routes.Application.desktop">Desktop view</a> - 
-  <a href="@routes.Application.mobile">Mobile view</a>
+  <p>
+    <strong>N.B.</strong>
+    The current application only support one instance of a hive-bees room, which means only one user at a time can try the Hive (Desktop view). We should fix that ASAP.
+  </p>
+  <ul>
+    <li>
+      <a href="@routes.Application.desktop">
+        <strong>Hive</strong> (Desktop view)
+      </a>
+    </li>
+    <li>
+      <a href="@routes.Application.mobile">
+        <strong>Bee</strong> (Mobile view)
+      </a>
+    </li>
+  </ul>
 </body>
 </html>
