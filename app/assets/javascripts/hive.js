@@ -4,10 +4,25 @@
   var $params = $("#params");
 
   // Network
+  // Connect with bees and hive brothers
   var network = new beez.WebSocketPeersManager({
     url: WEBSOCKET_ENDPOINT,
     role: "hive",
     acceptRoles: ["bee", "hive"]
+  });
+
+  var hives = new beez.Peers();
+  var bees = new beez.Peers();
+  network.peers.on("add", function (peer) {
+    var role = peer.get("role");
+    if (role === "hive")
+      hives.add(peer)
+    else if (role === "bee")
+      bees.add(peer);
+  });
+  network.peers.on("remove", function (peer) {
+    hives.remove(peer);
+    bees.remove(peer);
   });
 
   // Init Audio
@@ -94,7 +109,7 @@
 
   allAxis.on("change:changing", function (axis, moving, opts) {
     if (opts.network) return;
-    network.peers.send({
+    hives.send({
       e: "tabxychanging",
       tab: axis.get("id"),
       active: moving
@@ -103,7 +118,7 @@
   
   allAxis.on("change:x change:y", _.throttle(function (axis, value, opts) {
     if (opts.network) return;
-    network.peers.send({
+    hives.send({
       e: "tabxy",
       tab: axis.get("id"), 
       x: axis.get("x"), 
@@ -111,18 +126,8 @@
     });
   }, 50));
 
-  network.peers.on({
-    "add": function (peer) {
-      if (peer.get("isinitiator") && peer.get("role") == "hive") {
-        peer.send({
-          e: "tabs",
-          tabs: allAxis.map(function (axis) {
-            return axis.attributes;
-          })
-        });
-      }
-    },
-    "hive-tabs": function (msg, peer) {
+  hives.on({
+    "@tabs": function (msg, peer) {
       allAxis.each(function (axis) {
         var hiveAxis = _.find(msg.tabs, function (tab) {
           return tab.id == axis.get("id");
@@ -135,8 +140,11 @@
           network: true
         });
       });
-    },
-    "bee-tabopen": function (msg, peer) {
+    }
+  });
+
+  bees.on({
+    "@tabopen": function (msg, peer) {
       var axis = allAxis.get(msg.tab);
       peer.send({
         e: "tabxy", 
@@ -144,8 +152,21 @@
         x: axis.get("x"),
         y: axis.get("y")
       });
+    }
+  });
+
+  network.peers.on({
+    "add": function (peer) {
+      if (peer.get("isinitiator") && peer.get("role") == "hive") {
+        peer.send({
+          e: "tabs",
+          tabs: allAxis.map(function (axis) {
+            return axis.attributes;
+          })
+        });
+      }
     },
-    "all-tabxy": function (msg, peer) {
+    "@tabxy": function (msg, peer) {
       allAxis.get(msg.tab).set({
         x: msg.x,
         y: msg.y
@@ -153,7 +174,7 @@
         network: true
       });
     },
-    "all-tabxychanging": function (msg, peer) {
+    "@tabxychanging": function (msg, peer) {
       allAxis.get(msg.tab).set({
         changing: msg.active
       }, {

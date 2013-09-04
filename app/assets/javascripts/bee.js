@@ -1,6 +1,7 @@
 (function(){
 
   // Network
+  // Only connect with hives, not brother bees
   var network = new beez.WebSocketPeersManager({
     url: WEBSOCKET_ENDPOINT,
     role: "bee",
@@ -99,8 +100,8 @@
   });
 
   network.peers.on({
-    "hive-tabxy": function (msg, peer) {
-      if (xyAxis.get("tab") === msg.tab) {
+    "@tabxy": function (msg, peer) {
+      if (xyAxis.get("tab") === msg.tab && xyAxis.get("changing")==false) {
         xyAxis.set({
           x: msg.x,
           y: msg.y

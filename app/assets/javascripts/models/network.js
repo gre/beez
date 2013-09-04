@@ -176,8 +176,7 @@ beez.WebSocketPeersManager = beez.WebSocketControl.extend({
     }, this);
 
     function handlePeerMessage (msg) {
-      this.trigger(this.get("role")+"-"+msg.e, msg, this);
-      this.trigger("all-"+msg.e, msg, this);
+      this.trigger("@"+msg.e, msg, this);
     }
     this.peers.on("add", function (peer) {
       peer.on("rtcmessage", handlePeerMessage, peer);
