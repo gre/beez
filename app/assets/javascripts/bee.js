@@ -1,9 +1,10 @@
 (function(){
 
   // Network
-  var hive = new beez.BeePeerBroker({
-    wsUrl: WEBSOCKET_ENDPOINT,
-    id: PEER_HIVE_ID
+  var network = new beez.WebSocketPeersManager({
+    url: WEBSOCKET_ENDPOINT,
+    role: "bee",
+    acceptRoles: ["hive"]
   });
 
   OFFSET_Y = 40;
@@ -42,7 +43,10 @@
   syncXyAxis();
 
   tabs.on("tap", function (tab) {
-    hive.send([ "tabopen", tab.get("id") ]);
+    network.peers.send({
+      e: "tabopen",
+      tab: tab.get("id")
+    });
     tab.set("active", true);
     _.each(tabs.filter(function (t) { return t !== tab }), function (t) {
       t.set("active", false);
@@ -69,35 +73,39 @@
   });
 
   xyAxis.on("change:changing", function (m, moving) {
-    hive.send(["tabxychanging", this.get("tab"), moving]);
+    network.peers.send({
+      e: "tabxychanging",
+      tab: this.get("tab"),
+      active: moving
+    });
   });
 
   xyAxis.on("change:x change:y", _.throttle(function () {
-    var x = this.get("x");
-    var y = this.get("y");
-    var tab = this.get("tab");
-    hive.send(["tabxy", tab, x, y]);
+    network.peers.send({
+      e: "tabxy",
+      tab: this.get("tab"), 
+      x: this.get("x"), 
+      y: this.get("y")
+    });
   }, 50));
 
-  hive.on("connect", function () {
+  network.on("open", function () {
     $("#connect").hide();
     tabs.first().trigger("tap", tabs.first());
   });
 
-  hive.on("disconnect", function () {
+  network.on("close", function () {
     $("#disconnect").show();
   });
 
-  hive.on("data", function (msg) {
-    switch (msg[0]) {
-    case "tabxy":
-      if (xyAxis.get("tab") === msg[1]) {
+  network.peers.on({
+    "hive-tabxy": function (msg, peer) {
+      if (xyAxis.get("tab") === msg.tab) {
         xyAxis.set({
-          x: msg[2],
-          y: msg[3]
+          x: msg.x,
+          y: msg.y
         });
       }
-      break;
     }
   });
 

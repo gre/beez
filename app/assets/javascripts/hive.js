@@ -4,9 +4,10 @@
   var $params = $("#params");
 
   // Network
-  var hive = new beez.HiveBroker({
-    wsUrl: WEBSOCKET_ENDPOINT,
-    id: PEER_HIVE_ID
+  var network = new beez.WebSocketPeersManager({
+    url: WEBSOCKET_ENDPOINT,
+    role: "hive",
+    acceptRoles: ["bee", "hive"]
   });
 
   // Init Audio
@@ -91,24 +92,73 @@
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);
 
-  hive.on("data", function (msg) {
-    switch (msg[0]) {
-    case "tabopen":
-      var tab = msg[1];
-      var axis = allAxis.get(tab);
-      hive.send([ "tabxy", tab, axis.get("x"), axis.get("y") ]);
-      break;
-    case "tabxy":
-      allAxis.get(msg[1]).set({
-        x: msg[2],
-        y: msg[3]
+  allAxis.on("change:changing", function (axis, moving, opts) {
+    if (opts.network) return;
+    network.peers.send({
+      e: "tabxychanging",
+      tab: axis.get("id"),
+      active: moving
+    });
+  });
+  
+  allAxis.on("change:x change:y", _.throttle(function (axis, value, opts) {
+    if (opts.network) return;
+    network.peers.send({
+      e: "tabxy",
+      tab: axis.get("id"), 
+      x: axis.get("x"), 
+      y: axis.get("y")
+    });
+  }, 50));
+
+  network.peers.on({
+    "add": function (peer) {
+      if (peer.get("isinitiator") && peer.get("role") == "hive") {
+        peer.send({
+          e: "tabs",
+          tabs: allAxis.map(function (axis) {
+            return axis.attributes;
+          })
+        });
+      }
+    },
+    "hive-tabs": function (msg, peer) {
+      allAxis.each(function (axis) {
+        var hiveAxis = _.find(msg.tabs, function (tab) {
+          return tab.id == axis.get("id");
+        });
+        axis.set({
+          x: hiveAxis.x,
+          y: hiveAxis.y,
+          changing: hiveAxis.changing
+        }, {
+          network: true
+        });
       });
-      break;
-    case "tabxychanging":
-      allAxis.get(msg[1]).set({
-        changing: msg[2]
+    },
+    "bee-tabopen": function (msg, peer) {
+      var axis = allAxis.get(msg.tab);
+      peer.send({
+        e: "tabxy", 
+        tab: msg.tab,
+        x: axis.get("x"),
+        y: axis.get("y")
       });
-      break;
+    },
+    "all-tabxy": function (msg, peer) {
+      allAxis.get(msg.tab).set({
+        x: msg.x,
+        y: msg.y
+      }, {
+        network: true
+      });
+    },
+    "all-tabxychanging": function (msg, peer) {
+      allAxis.get(msg.tab).set({
+        changing: msg.active
+      }, {
+        network: true
+      });
     }
   });
 
