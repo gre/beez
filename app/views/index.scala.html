@@ -8,8 +8,38 @@
   <title>Beez</title>
   <style type="text/css">
   body {
-    background: #000;
-    color: #fff;
+    background: #eee;
+    color: #333;
+    font-family: sans-serif;
+  }
+  #wrapper {
+    width: 640px;
+    margin: 0px auto;
+  }
+  footer {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    clear: both;
+  }
+  header {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+  form {
+    padding: 20px 0;
+    background: #fff;
+    text-align: center;
+  }
+  ul {
+    padding: 0;
+    margin: 10px 0;
+  }
+  li {
+    margin-top: 5px;
+    margin-left: 0;
+    padding-left: 0;
   }
   button {
     text-decoration: none;
@@ -19,13 +49,53 @@
     min-width: 300px;
     display: inline-block;
   }
+  a {
+    color: #258;
+  }
+  a.big {
+    font-size: 2em;
+    line-height: 2em;
+  }
+  code {
+    background: #567;
+    color: #def;
+    padding: 2px 6px;
+  }
   </style>
 </head>
 <body>
+<div id="wrapper">
+
+<header>
+  <h1>Beez</h1>
   <form action="@routes.Application.newHive()" method="POST">
     <button type="submit">
-      Create a new <strong>Hive</strong>
+      Create a new <strong>Hive</strong> room
     </button>
   </form>
+</header>
+
+<div id="demo">
+  <h2>Demo</h2>
+  <iframe width="640" height="480" src="//www.youtube.com/embed/QwU6IMNLF0o" frameborder="0" allowfullscreen></iframe>
+</div>
+
+<div id="main">
+  <h2>Getting Started, How to use Beez</h2>
+  <img style="width: 200px; float: right; margin-left: 10px" src="http://i.imgur.com/8nkIeTR.png" alt="" />
+  <ul>
+    <li>With <em>Google Chrome<em>, <strong>Create a new Hive room</strong>. <em style="font-size: 0.6em; opacity: 0.6">(Firefox will be supported once it fully supports Audio API and WebRTC)</em></li>
+    <li><strong>Share</strong> the <code>"/hive/###"</code> URL to your friend.</li>
+    <li><strong>Share/Open</strong> the <code>"/bee/###"</code> URL with your smartphone on Android Chrome.</li>
+    <li><strong>Enjoy!</strong></li>
+  </ul>
+  <p>
+    <img style="width: 426px" src="http://i.imgur.com/Op6DHNm.png" alt="" />
+  </p>
+</div>
+<footer>
+  <a class="big" href="http://greweb.me/2013/09/beez">For more informations, Read that article</a>
+</footer>
+</div>
 </body>
 </html>
