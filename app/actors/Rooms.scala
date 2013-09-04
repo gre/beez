@@ -65,11 +65,10 @@ object Rooms {
           case Room.Connected(out) => 
             val in = Iteratee.foreach[JsValue] { msg =>
               Logger.debug("Received a message from " + id + ": \n" + msg + "\n")
-              val maybeReceiver = (msg \ "to").asOpt[String]
-              maybeReceiver.map { to =>
+              (msg \ "to").asOpt[String].map { to =>
                 room ! Room.Talk(id, to, (msg \ "data"))
-                }.getOrElse {
-                  Logger.debug("Message from " + id + " ignored: bad JSON format")
+              } getOrElse {
+                room ! Room.Broadcast(id, msg)
               }
             }.map { _ =>
                 room ! Room.Quit(id)
@@ -149,6 +148,7 @@ object Room {
   case class Connected(out: Enumerator[JsValue]) extends RoomEvent
   case class CannotConnect(error: String) extends RoomEvent
   case class Join(id: String) extends RoomEvent
+  case class Broadcast(id: String, data: JsValue) extends RoomEvent
   case class Talk(id: String, to: String, data: JsValue) extends RoomEvent
   case class Quit(id: String)
 
@@ -168,8 +168,9 @@ class Room(slug: String) extends Actor {
     }
   }
 
-  def broadcast (json: JsValue) {
-    peers.map { case (id, peer) =>
+  def broadcast (json: JsValue, except: Option[String] = None) {
+    val receivers = except.map { exc => peers - exc } getOrElse(peers)
+    receivers.map { case (id, peer) =>
       peer.push(json)
     }
   }
@@ -220,9 +221,17 @@ class Room(slug: String) extends Actor {
         }
       }
 
+    case Broadcast(id, data) => {
+      broadcast(Json.obj(
+        "e" -> "broadcast",
+        "id" -> id,
+        "data" -> data
+      ), Some(id))
+    }
+
     case Talk(id, to, data) => {
       sendTo(to, Json.obj(
-        "e" -> "data",
+        "e" -> "talk",
         "from" -> id,
         "data" -> data
       ))

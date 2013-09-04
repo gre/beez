@@ -1,6 +1,4 @@
 (function(){
-// FIXME: clean code, make it more Backbone compatible, improve the connect/disconnect event.
-
 function trace(text) {
     // console.log(((new Date()).getTime() / 1000) + ": " + text);
 }
@@ -9,16 +7,21 @@ function logError(error) {
     console.error(error);
 }
 
+// FIXME TODO extract the code into an independent lib, keep the Backbone model
+// TODO: find better name for functions? onmessage & handleMessage are not clear
+// TODO nice to have: onconnect / ondisconnect callback
+
 beez.Peer = Backbone.Model.extend({
     options: {
       servers: {"iceServers":[{"url":"stun:stun.l.google.com:19302"}]}
     },
     initialize: function(options) {
-        console.log("new Peer: ", options);
-        this.on("message", this.onmessage, this);
         this.localPeerConnection = null;
         this.createConnection(options.isinitiator);
         //this.sendChannel = null;
+    },
+    destroy: function (options) { // Overriding default backbone destroy so it doesn't do sync() stuff
+      this.trigger("destroy", this, this.collection, options);
     },
     createConnection: function(isinitiator) {
       var servers = this.get("servers");
@@ -69,7 +72,7 @@ beez.Peer = Backbone.Model.extend({
         }
     },
     signalingChannelSend: function(data) {
-      this.get("wssend")(this.id, data);
+      this.get("sendTo")(this.id, data);
     },
     // Send stuff
     gotLocalDescription: function (desc) {
@@ -91,12 +94,13 @@ beez.Peer = Backbone.Model.extend({
 
     handleMessage: function (event) {
       trace('Received message: ' + event.data);
-      this.trigger("rtcmessage", JSON.parse(event.data), this);
+      var json = JSON.parse(event.data);
+      this.trigger("rtcmessage", json);
     },
 
     handleSendChannelStateChange: function () {
       var readyState = this.sendChannel.readyState;
-      this.trigger(readyState);
+      this.trigger(readyState, this);
       trace('Send channel state is: ' + readyState);
     },
     // For not initiator only
@@ -119,6 +123,17 @@ beez.Peer = Backbone.Model.extend({
     }
 });
 
+// A collection of peers with some methods
+beez.Peers = Backbone.Collection.extend({
+  model: beez.Peer,
+  send: function (json) {
+    this.each(function (peer) {
+      peer.send(json);
+    });
+  }
+})
+
+// A Simple WebSocket Backbone Wrapper with send and sendTo methods
 beez.WebSocketControl = Backbone.Model.extend({
   initialize: function () {
     this.ws = new WebSocket(this.get("url"));
@@ -142,97 +157,80 @@ beez.WebSocketControl = Backbone.Model.extend({
   send: function(jsObject) {
     this.ws.send(JSON.stringify(jsObject));
   },
-  wssend: function(id, json) {
-    this.ws.send(JSON.stringify({ "to": id, "data": json }));
+  sendTo: function(to, json) {
+    this.ws.send(JSON.stringify({ "to": to, "data": json }));
   }
 });
 
-beez.HiveBroker = Backbone.Model.extend({
-    initialize: function () {
-        this.peers = new Backbone.Collection();
-        this.ws = new WebSocket(this.get("wsUrl"));
-        this.ws.onclose = _.bind(this.onclose, this);
-        this.ws.onopen = _.bind(this.onopen, this);
-        this.ws.onmessage = _.bind(this.onmessage, this);
-    },
-    onopen: function () {
-      trace("WS open");
-      this.trigger("connect");
-    },
-    onclose: function () {
-      trace("WS close");
-      this.trigger("disconnect");
-    },
-    onmessage: function(event) {
-        trace('Hive: receive json '+event.data)
-        var json = JSON.parse(event.data);
-        var peer = this.peers.get(json.from);
+// Provide a WebSocketControl which manage Peers
+// This is closely implemented with the server Room actors
+beez.WebSocketPeersManager = beez.WebSocketControl.extend({
+  initialize: function () {
+    beez.WebSocketControl.prototype.initialize.apply(this, arguments);
+    this.incomingPeers = new beez.Peers();
+    this.peers = new beez.Peers();
 
-        if (peer) {
-            peer.trigger("message", json.data);
-        } else {
-            var peer = new beez.Peer({
-              id: json.from,
-              wssend: _.bind(this.wssend, this),
-              isinitiator: false
-            });
-            this.peers.add(peer);
-            peer.on("rtcmessage", function (message) {
-              this.trigger("data", message);
-            }, this);
-            peer.trigger("message", json.data);
+    this.incomingPeers.on("open", function (peer) {
+      this.peers.add(peer);
+      this.incomingPeers.remove(peer);
+    }, this);
+
+    function handlePeerMessage (msg) {
+      this.trigger(this.get("role")+"-"+msg.e, msg, this);
+      this.trigger("all-"+msg.e, msg, this);
+    }
+    this.peers.on("add", function (peer) {
+      peer.on("rtcmessage", handlePeerMessage, peer);
+    }, this);
+    this.peers.on("remove", function (peer) {
+      peer.off("rtcmessage", handlePeerMessage);
+    }, this);
+
+    this.on({
+      "open": function (json) {
+        this.send({
+          e: "ready",
+          role: this.get("role")
+        });
+      },
+      "receive-disconnect": function (json) {
+        var peer = this.peers.get(json.id) || this.incomingPeers.get(json.id);
+        peer && peer.destroy(); // will remove peer from the collections
+      },
+      "receive-broadcast": function (json) {
+        var data = json.data;
+        if (data.e === "ready" && this.get("acceptRoles").indexOf(data.role) > -1) {
+          this.sendTo(json.id, {
+            e: "hello",
+            role: this.get("role")
+          });
+          var peer = new beez.Peer({
+            id: json.id,
+            sendTo: _.bind(this.sendTo, this),
+            isinitiator: true,
+            role: data.role
+          })
+          this.incomingPeers.add(peer);
         }
-    },
-    wssend: function(id, json) {
-        //console.log("send data over websocket: ", {"to": id, "data": json});
-
-        this.ws.send(JSON.stringify( {"to": id, "data": json} ));
-    },
-    send: function (json) {
-      this.peers.each(function (peer) {
-        peer.send(json);
-      });
-    }
-});
-
-beez.BeePeerBroker = Backbone.Model.extend({
-    initialize: function () {
-        this.ws = new WebSocket(this.get("wsUrl"));
-        this.ws.onclose = _.bind(this.onclose, this);
-        this.ws.onopen = _.bind(this.onopen, this);
-        this.ws.onmessage = _.bind(this.onmessage, this);
-    },
-    onopen: function () {
-      trace("WS open");
-      this.peer = new beez.Peer({
-        id: this.get("id"),
-        wssend: _.bind(this.wssend, this),
-        isinitiator: true
-      });
-      this.peer.on("rtcmessage", function (message) {
-        this.trigger("data", message);
-      }, this);
-      this.trigger("connect");
-    },
-    onclose: function () {
-      trace("WS close");
-      this.trigger("disconnect");
-    },
-    onmessage: function(event) {
-        var json = JSON.parse(event.data);
-        //console.log('BeePeerBroker: receive json ', json);
-
-        this.peer.trigger("message", json.data);
-    },
-    wssend: function(id, json) {
-        trace("send data over websocket: " + JSON.stringify(json));
-        this.ws.send(JSON.stringify( {"to": this.get("id"), "data": json} ));
-    },
-    send: function(json) {
-      try {
-        this.peer.send(json);
-      } catch(e) {}
-    }
+      },
+      "receive-talk": function (json) {
+        var peer = this.incomingPeers.get(json.from);
+        var isHello = json.data && json.data.e == "hello";
+        if (!peer && isHello) {
+          peer = new beez.Peer({
+            id: json.from,
+            sendTo: _.bind(this.sendTo, this),
+            isinitiator: false,
+            role: json.data.role
+          });
+          this.incomingPeers.add(peer);
+        }
+        if (peer && !isHello) {
+          peer.onmessage(json.data);
+        }
+      }
+    });
+  }
 });
 
 }());

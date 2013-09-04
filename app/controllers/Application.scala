@@ -30,7 +30,7 @@ object Application extends Controller {
       Rooms.get(slug).map { _ =>
         Ok(views.html.bee(slug))
       } recover { case e =>
-        NotFound
+        NotFound(views.html.roomnotfound(slug))
       }
     }
   }
@@ -40,7 +40,7 @@ object Application extends Controller {
       Rooms.get(slug).map { _ =>
         Ok(views.html.hive(slug))
       } recover { case e =>
-        NotFound
+        NotFound(views.html.roomnotfound(slug))
       }
     }
   }

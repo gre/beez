@@ -4,64 +4,11 @@
   var $params = $("#params");
 
   // Network
-  var peers = new Backbone.Collection();
-  var peersReady = new Backbone.Collection();
-  peers.on("add", function (peer) {
-    peer.on("open", function () {
-      peersReady.add(peer);
-    });
+  var network = new beez.WebSocketPeersManager({
+    url: WEBSOCKET_ENDPOINT,
+    role: "hive",
+    acceptRoles: ["bee", "hive"]
   });
-  peers.on("remove", function (peer) {
-    peersReady.remove(peer);
-  });
-
-  var controlNetwork = new beez.WebSocketControl({
-    url: WEBSOCKET_ENDPOINT
-  });
-
-  controlNetwork.on({
-    "open": function () {
-    },
-    "close": function () {
-    },
-    "receive-data": function (json) {
-      var peer = peers.get(json.from);
-      if (!peer) {
-        peer = new beez.Peer({
-          id: json.from,
-          wssend: _.bind(this.wssend, this),
-          isinitiator: false
-        });
-        peers.add(peer);
-      }
-      peer.trigger("message", json.data);
-    },
-    "receive-connect": function (json) {
-      peers.add(
-          new beez.Peer({
-            id: json.id,
-            wssend: _.bind(this.wssend, this),
-            isinitiator: true
-          })
-      );
-    },
-    "receive-disconnect": function (json) {
-      peers.remove(json.id);
-    }
-  });
-
-  peersReady.on("rtcmessage", function (message, peer) {
-    console.log("receive: "+message+" from "+peer.id);
-    if (message[0] == "ping") {
-      peer.send(["pong", Date.now()]);
-    }
-  });
-
-  setInterval(function () {
-    peersReady.each(function (peer) {
-      peer.send(["ping", Date.now()]);
-    });
-  }, 1000);
 
   // Init Audio
   var audio = new beez.Audio();
@@ -145,26 +92,73 @@
   audio.start();
   setInterval(_.bind(waveform.update, waveform), 60);
 
-  peers.on("data", function (msg) {
-    switch (msg[0]) {
-    case "tabopen":
-      var tab = msg[1];
-      var axis = allAxis.get(tab);
-      peers.each(function (peer) {
-        peer.send([ "tabxy", tab, axis.get("x"), axis.get("y") ]);
+  allAxis.on("change:changing", function (axis, moving, opts) {
+    if (opts.network) return;
+    network.peers.send({
+      e: "tabxychanging",
+      tab: axis.get("id"),
+      active: moving
+    });
+  });
+  
+  allAxis.on("change:x change:y", _.throttle(function (axis, value, opts) {
+    if (opts.network) return;
+    network.peers.send({
+      e: "tabxy",
+      tab: axis.get("id"), 
+      x: axis.get("x"), 
+      y: axis.get("y")
+    });
+  }, 50));
+
+  network.peers.on({
+    "add": function (peer) {
+      if (peer.get("isinitiator") && peer.get("role") == "hive") {
+        peer.send({
+          e: "tabs",
+          tabs: allAxis.map(function (axis) {
+            return axis.attributes;
+          })
+        });
+      }
+    },
+    "hive-tabs": function (msg, peer) {
+      allAxis.each(function (axis) {
+        var hiveAxis = _.find(msg.tabs, function (tab) {
+          return tab.id == axis.get("id");
+        });
+        axis.set({
+          x: hiveAxis.x,
+          y: hiveAxis.y,
+          changing: hiveAxis.changing
+        }, {
+          network: true
+        });
       });
-      break;
-    case "tabxy":
-      allAxis.get(msg[1]).set({
-        x: msg[2],
-        y: msg[3]
+    },
+    "bee-tabopen": function (msg, peer) {
+      var axis = allAxis.get(msg.tab);
+      peer.send({
+        e: "tabxy", 
+        tab: msg.tab,
+        x: axis.get("x"),
+        y: axis.get("y")
       });
-      break;
-    case "tabxychanging":
-      allAxis.get(msg[1]).set({
-        changing: msg[2]
+    },
+    "all-tabxy": function (msg, peer) {
+      allAxis.get(msg.tab).set({
+        x: msg.x,
+        y: msg.y
+      }, {
+        network: true
       });
-      break;
+    },
+    "all-tabxychanging": function (msg, peer) {
+      allAxis.get(msg.tab).set({
+        changing: msg.active
+      }, {
+        network: true
+      });
     }
   });
 
