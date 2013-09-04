@@ -11,18 +11,7 @@
     background: #000;
     color: #fff;
   }
-  ul, li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  li {
-  }
-  a {
-    color: #123;
-    background: #def;
-    padding: 5px 10px;
-    margin: 5px;
+  button {
     text-decoration: none;
     line-height: 2em;
     font-size: 2em;
@@ -33,21 +22,10 @@
   </style>
 </head>
 <body>
-  <p>
-    <strong>N.B.</strong>
-    The current application only support one instance of a hive-bees room, which means only one user at a time can try the Hive (Desktop view). We should fix that ASAP.
-  </p>
-  <ul>
-    <li>
-      <a href="@routes.Application.desktop">
-        <strong>Hive</strong> (Desktop view)
-      </a>
-    </li>
-    <li>
-      <a href="@routes.Application.mobile">
-        <strong>Bee</strong> (Mobile view)
-      </a>
-    </li>
-  </ul>
+  <form action="@routes.Application.newHive()" method="POST">
+    <button type="submit">
+      Create a new <strong>Hive</strong>
+    </button>
+  </form>
 </body>
 </html>
