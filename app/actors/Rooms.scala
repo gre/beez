@@ -31,7 +31,7 @@ object Rooms {
 
   var r = new scala.util.Random()
 
-  val alphanum = "azertyuiopqsdfghjklmwxcvbn1234567890";
+  val alphanum = "123456789";
   def genSlug(nb: Int): String = {
     Range(0, nb).map(_ => 
       alphanum(r.nextInt(alphanum.length))
