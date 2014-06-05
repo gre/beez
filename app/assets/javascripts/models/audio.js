@@ -18,7 +18,7 @@
 
 beez.Audio = Backbone.Model.extend({
   initialize: function () {
-    this.ctx = new webkitAudioContext();
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.seq = new beez.Sequence({
       ctx: this.ctx
     });
@@ -64,7 +64,7 @@ beez.Audio = Backbone.Model.extend({
     var osc1 = ctx.createOscillator();
     osc1.type = "sine";
     osc1.start(0);
-    var osc1gain = ctx.createGainNode();
+    var osc1gain = ctx.createGain();
     osc1gain.gain.value = 1.00;
     osc1.connect(osc1gain);
 
@@ -72,7 +72,7 @@ beez.Audio = Backbone.Model.extend({
     osc2.type = "square";
     osc2.detune.value = 1+12*100;
     osc2.start(0);
-    var osc2gain = ctx.createGainNode();
+    var osc2gain = ctx.createGain();
     osc2gain.gain.value = 0.02;
     osc2.connect(osc2gain);
 
@@ -80,11 +80,11 @@ beez.Audio = Backbone.Model.extend({
     osc3.type = "sawtooth";
     osc3.detune.value = 1-12*100;
     osc3.start(0);
-    var osc3gain = ctx.createGainNode();
+    var osc3gain = ctx.createGain();
     osc3gain.gain.value = 0.05;
     osc3.connect(osc3gain);
 
-    var oscsGain = ctx.createGainNode();
+    var oscsGain = ctx.createGain();
     this.bindParam(beez.params.get("carriergain"), oscsGain.gain);
     osc1gain.connect(oscsGain);
     osc2gain.connect(oscsGain);
@@ -93,7 +93,7 @@ beez.Audio = Backbone.Model.extend({
     var mod = ctx.createOscillator();
     mod.type = "sine";
     this.bindParam(beez.params.get("moddetune"), mod.detune);
-    var modGain = ctx.createGainNode();
+    var modGain = ctx.createGain();
     this.bindParam(beez.params.get("modgain"), modGain.gain);
     mod.start(0);
     mod.connect(modGain);
@@ -114,8 +114,8 @@ beez.Audio = Backbone.Model.extend({
       left.connect(merger, 0, 0);
       right.connect(merger, 0, 1);
 
-      var dry = ctx.createGainNode();
-      var wet = ctx.createGainNode();
+      var dry = ctx.createGain();
+      var wet = ctx.createGain();
 
       merger.connect(wet);
       input.connect(dry);
@@ -123,7 +123,7 @@ beez.Audio = Backbone.Model.extend({
       wet.gain.value = 0.3;
       dry.gain.value = 1 - wet.gain.value;
 
-      var output = ctx.createGainNode();
+      var output = ctx.createGain();
       wet.connect(output);
       dry.connect(output);
       return output;
