@@ -46,8 +46,8 @@ beez.Sequence = Backbone.Model.extend({
     // "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(function(n){ return NOTES[n]; })
     //notes: [164.814, 195.998, 220, 195.998, 293.665, 261.626, 293.665, 329.628],
     notes: "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(midiNoteForNotation),
-    fromNote: 30,
-    toNote: 80,
+    fromNote: 24,
+    toNote: 84,
     width: 200,
     height: 500
   },
