@@ -18,7 +18,8 @@
 
 (function(){
 
-  var XY_AXIS_HEIGHT = 120;
+  var XY_AXIS_WIDTH = 160;
+  var XY_AXIS_HEIGHT = 160;
   var $params = $("#params");
 
   // Network
@@ -58,7 +59,7 @@
         id: tab,
         x: xP.getPercent(),
         y: yP.getPercent(),
-        width: 160,
+        width: XY_AXIS_WIDTH,
         height: XY_AXIS_HEIGHT,
         name: tab,
         xlabel: xP.get("name"),
@@ -111,9 +112,19 @@
       width: w,
       height: h
     });
+    var seqWidth = Math.max(160, Math.min(w / 4, 300));
     audio.seq.set({
-      width: Math.max(200, w-900),
+      width: seqWidth,
       height: Math.max(200, h - 60)
+    });
+
+    var axisW = Math.max(120, Math.floor((w - seqWidth - 40) / allAxis.length - 10));
+    var axisH = Math.floor(axisW * XY_AXIS_HEIGHT / XY_AXIS_WIDTH);
+    allAxis.each(function (axis) {
+      axis.set({
+        width: axisW,
+        height: axisH
+      });
     });
   }
   $(window).on("resize", _.throttle(onWindowResize, 200));
