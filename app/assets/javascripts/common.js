@@ -20,7 +20,7 @@ beez.params = new beez.Parameters(_.map([
   {
     id: "bpm",
     name: "bpm",
-    value: 20,
+    value: 90,
     from: 20,
     to: 200,
     tab: "carrier",
