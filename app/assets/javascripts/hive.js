@@ -135,7 +135,6 @@
   }
   $("#waveform").click(toggleAudio);
   $(document).on("keyup", function (e) {
-    console.log(e.which);
     if (e.which === 32)
       toggleAudio();
   });
@@ -160,13 +159,29 @@
     if (opts.network) return;
     hives.send({
       e: "tabxy",
-      tab: axis.get("id"), 
+      tab: axis.get("id"),
       x: axis.get("x"), 
       y: axis.get("y")
     });
   }, 50));
 
+  audio.seq.on("change:notes", _.throttle(function (model, notes, opts) {
+    if (opts.network) return;
+    hives.send({
+      e: "notes",
+      notes: notes
+    });
+  }, 50));
+
   hives.on({
+    "@notes": function (msg) {
+      audio.seq.set({
+        notes: msg.notes
+      }, {
+        network: true
+      });
+    },
+
     "@tabs": function (msg, peer) {
       allAxis.each(function (axis) {
         var hiveAxis = _.find(msg.tabs, function (tab) {
@@ -203,6 +218,10 @@
           tabs: allAxis.map(function (axis) {
             return axis.attributes;
           })
+        });
+        peer.send({
+          e: "notes",
+          notes: audio.seq.get("notes")
         });
       }
     },

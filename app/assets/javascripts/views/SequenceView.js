@@ -63,7 +63,7 @@ beez.SequenceView = Backbone.View.extend({
     var gridNoteLength = 1 + toNote - fromNote;
     var i = Math.floor(x * length);
     var j = fromNote + Math.floor((1-y) * gridNoteLength) + 1;
-    var notes = this.model.get("notes");
+    var notes = _.clone(this.model.get("notes"));
     notes[i] = j;
     this.model.set("notes", notes);
   },
