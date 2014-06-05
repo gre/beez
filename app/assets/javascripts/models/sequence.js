@@ -15,11 +15,41 @@
  * You should have received a copy of the AFFERO GNU General Public License
  * along with Beez.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
  */
+
+var NOTES = (function () {
+  var notes = {};
+  var toneSymbols = "CcDdEFfGgAaB";
+  function noteToFrequency (note) {
+    return Math.pow(2, (note-57)/12)*440;
+  }
+  for (var octave = 0; octave <= 10; ++octave) {
+    for (var t = 0; t < 12; ++t) {
+      notes[octave*12+t] = notes[toneSymbols[t]+octave] = noteToFrequency(octave * 12 + t);
+    }
+  }
+  return notes;
+
+}());
+
+function midiNoteForNotation (n) {
+  var toneSymbols = "CcDdEFfGgAaB";
+  return 33 + toneSymbols.indexOf(n[0]) + 12 * parseInt(n[1]);
+}
+function frequencyForNote (n) {
+  return NOTES[n];
+}
+
+
 beez.Sequence = Backbone.Model.extend({
   defaults: {
     bpm: 180,
-    // E1 G1 A1 G1 D2 C2 D2 E2
-    notes: [164.814, 195.998, 220, 195.998, 293.665, 261.626, 293.665, 329.628]
+    // "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(function(n){ return NOTES[n]; })
+    //notes: [164.814, 195.998, 220, 195.998, 293.665, 261.626, 293.665, 329.628],
+    notes: "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(midiNoteForNotation),
+    fromNote: 30,
+    toNote: 80,
+    width: 200,
+    height: 500
   },
   initialize: function () {
     this.ctx = this.get("ctx") || new webkitAudioContext();
@@ -47,9 +77,15 @@ beez.Sequence = Backbone.Model.extend({
 
   nextNote: function () {
     var secondsPerBeat = 60 / this.get("bpm");
-
     this.nextNoteTime += secondsPerBeat * 0.25;
     this.current16thNote = (this.current16thNote + 1) % this.get("notes").length;
+  },
+
+  interpolateTime: function () {
+    var secondsPerBeat = 60 / this.get("bpm");
+    var length = this.get("notes").length;
+    var t = this.current16thNote + Math.min(1, (this.ctx.currentTime - this.nextNoteTime) / (secondsPerBeat/4));
+    return (t < 0) ? t + length : t;
   },
 
   scheduler: function () {
@@ -65,6 +101,9 @@ beez.Sequence = Backbone.Model.extend({
   },
 
   scheduleNote: function (beatNumber, time) {
-    this.trigger("schedule", this.get("notes")[beatNumber], time);
+    var note = this.get("notes")[beatNumber];
+    if (note) {
+      this.trigger("schedule", frequencyForNote(note), time);
+    }
   }
 });

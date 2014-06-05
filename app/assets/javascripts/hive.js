@@ -91,18 +91,33 @@
     }));
   }(beez.params));
 
+
+  var node = $('<div class="sequence-editor" />');
+  var view = new beez.SequenceView({
+    model: audio.seq,
+    el: node
+  });
+  $("#wrapper").append(node);
+
+
   /// init Waveform
   var waveform = new beez.Waveform({
     sampling: 512
   });
-  function syncWaveformSize () {
+  function onWindowResize () {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
     waveform.set({
-      width: window.innerWidth,
-      height: window.innerHeight
+      width: w,
+      height: h
+    });
+    audio.seq.set({
+      width: Math.max(200, w-900),
+      height: Math.max(200, h - 60)
     });
   }
-  $(window).on("resize", _.throttle(syncWaveformSize, 200));
-  syncWaveformSize();
+  $(window).on("resize", _.throttle(onWindowResize, 200));
+  onWindowResize();
 
   var waveformView = new beez.WaveformView({
     model: waveform,
@@ -111,11 +126,18 @@
   });
 
   // Starting the Audio
-  $("#waveform").click(function () {
+
+  var toggleAudio = function () {
     audio.toggle(function () {
       waveform.setNode(audio.output, audio.ctx);
     });
     $(document.body).toggleClass("stopped", !audio.get("started"));
+  }
+  $("#waveform").click(toggleAudio);
+  $(document).on("keyup", function (e) {
+    console.log(e.which);
+    if (e.which === 32)
+      toggleAudio();
   });
   $(window).on("blur", function () {
     audio.stop();

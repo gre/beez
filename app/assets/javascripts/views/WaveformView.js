@@ -55,7 +55,7 @@ beez.WaveformView = Backbone.View.extend({
     for (var i=0; i<lengthSpectrum; ++i) {
       var value = arraySpectrum[i];
       var x = i*5;
-      var w = 4;
+      var w = 5;
       ctx.fillStyle = "#def";
       ctx.fillRect(x,0,w,H);
       ctx.fillStyle = gradient;
