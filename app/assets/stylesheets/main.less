@@ -6,10 +6,6 @@ body {
   overflow: hidden;
 }
 
-footer {
-  text-align: center;
-}
-
 footer > div {
   display: inline-block;
   margin-left: 10px;
@@ -106,11 +102,34 @@ footer > div {
   right: 10px;
 }
 
+.content {
+  position: fixed;
+  top: 0px;
+  padding: 20px;
+  width: 75%;
+  h2.url {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+    padding-top: 20px;
+    font-size: 2.6em;
+    font-family: monospace;
+    color: #789;
+    opacity: 1;
+  }
+  .tip {
+    margin: .5em 0;
+    font-size: 1.4em;
+    font-style: italic;
+    color: #789;
+    opacity: 0.6;
+  }
+}
+
 header {
   position: fixed;
   top: 0;
   width: 100%;
-  text-align: center;
   h1 {
     float: left;
     display: inline;
@@ -127,16 +146,6 @@ header {
        text-decoration: none;
     }
   }
-  h2.url {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-    padding-top: 20px;
-    font-size: 2.6em;
-    font-family: monospace;
-    color: #789;
-    opacity: 1;
-  }
   .github {
     float: right;
     padding: 5px;
@@ -149,5 +158,4 @@ footer {
   position: fixed;
   bottom: 10px;
   left: 10px;
-  text-align: left;
 }
