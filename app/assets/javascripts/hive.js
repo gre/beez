@@ -112,7 +112,7 @@
       width: w,
       height: h
     });
-    var seqWidth = Math.max(160, Math.min(w / 4, 300));
+    var seqWidth = Math.max(140, Math.min(w / 4, 300));
     audio.seq.set({
       width: seqWidth,
       height: Math.max(200, h - 60)
@@ -120,6 +120,7 @@
 
     var axisW = Math.max(120, Math.floor((w - seqWidth - 40) / allAxis.length - 10));
     var axisH = Math.floor(axisW * XY_AXIS_HEIGHT / XY_AXIS_WIDTH);
+    $params.width((w - seqWidth - 30)+"px");
     allAxis.each(function (axis) {
       axis.set({
         width: axisW,
