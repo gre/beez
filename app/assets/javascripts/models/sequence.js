@@ -43,12 +43,12 @@ function frequencyForNote (n) {
 beez.Sequence = Backbone.Model.extend({
   defaults: {
     bpm: 180,
-    // "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(function(n){ return NOTES[n]; })
-    //notes: [164.814, 195.998, 220, 195.998, 293.665, 261.626, 293.665, 329.628],
     notes: "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(midiNoteForNotation),
-    fromNote: 24,
-    toNote: 84,
+    fromOctave: 0,
+    toOctave: 7,
+    
     width: 200,
+    notesheightratio: 0.6,
     height: 500
   },
   initialize: function () {

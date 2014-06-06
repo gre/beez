@@ -150,9 +150,6 @@
     if (e.which === 32)
       toggleAudio();
   });
-  $(window).on("blur", function () {
-    audio.stop();
-  });
   audio.init();
   waveform.setNode(audio.output, audio.ctx);
   audio.start();
