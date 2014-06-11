@@ -174,6 +174,14 @@
     });
   }, 50));
 
+  audio.seq.on("change:modes", _.throttle(function (model, modes, opts) {
+    if (opts.network) return;
+    hives.send({
+      e: "modes",
+      modes: modes
+    });
+  }, 50));
+
   audio.seq.on("change:notes", _.throttle(function (model, notes, opts) {
     if (opts.network) return;
     hives.send({
@@ -183,6 +191,13 @@
   }, 50));
 
   hives.on({
+    "@modes": function (msg) {
+      audio.seq.set({
+        modes: msg.modes
+      }, {
+        network: true
+      });
+    },
     "@notes": function (msg) {
       audio.seq.set({
         notes: msg.notes
@@ -227,6 +242,10 @@
           tabs: allAxis.map(function (axis) {
             return axis.attributes;
           })
+        });
+        peer.send({
+          e: "modes",
+          modes: audio.seq.get("modes")
         });
         peer.send({
           e: "notes",

@@ -73,7 +73,7 @@ beez.Audio = Backbone.Model.extend({
     osc2.detune.value = 1+12*100;
     osc2.start(0);
     var osc2gain = ctx.createGain();
-    osc2gain.gain.value = 0.02;
+    osc2gain.gain.value = 0.04;
     osc2.connect(osc2gain);
 
     var osc3 = ctx.createOscillator();
@@ -81,7 +81,7 @@ beez.Audio = Backbone.Model.extend({
     osc3.detune.value = 1-12*100;
     osc3.start(0);
     var osc3gain = ctx.createGain();
-    osc3gain.gain.value = 0.05;
+    osc3gain.gain.value = 0.09;
     osc3.connect(osc3gain);
 
     var oscsGain = ctx.createGain();
@@ -179,7 +179,11 @@ beez.Audio = Backbone.Model.extend({
     var compressor = ctx.createDynamicsCompressor();
     reverb.connect(compressor);
 
-    this.output = compressor;
+    var finalGain = ctx.createGain();
+    finalGain.gain.value = 1.0;
+    compressor.connect(finalGain);
+
+    this.output = finalGain;
 
     (function (modmult, carriermult) {
       var currentNoteFreq;
@@ -222,6 +226,16 @@ beez.Audio = Backbone.Model.extend({
         }
       });
 
+      this.seq.on("scheduleUnmute", function (time) {
+        finalGain.gain.cancelScheduledValues(time-0.02);
+        finalGain.gain.setValueAtTime(0, time-0.02);
+        finalGain.gain.linearRampToValueAtTime(1, time+0.02);
+      }, this);
+      this.seq.on("scheduleMute", function (time) {
+        finalGain.gain.cancelScheduledValues(time-0.02);
+        finalGain.gain.setValueAtTime(1, time-0.02);
+        finalGain.gain.linearRampToValueAtTime(0, time+0.02);
+      }, this);
       this.seq.on("schedule", function (noteFreq, time) {
         currentNoteFreq = noteFreq;
         syncMults(noteFreq, time);

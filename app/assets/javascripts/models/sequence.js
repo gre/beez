@@ -44,6 +44,7 @@ beez.Sequence = Backbone.Model.extend({
   defaults: {
     bpm: 180,
     notes: "E1 G1 A1 G1 D2 C2 D2 E2".split(" ").map(midiNoteForNotation),
+    modes: [0, 0, 0, 0, 0, 0, 0, 0],
     fromOctave: 0,
     toOctave: 7,
     
@@ -61,6 +62,7 @@ beez.Sequence = Backbone.Model.extend({
     this.nextNoteTime = 0;
     this.current16thNote = 0;
     this.timerId = null;
+    this.previousMode = 0;
   },
 
   play: function () {
@@ -102,8 +104,21 @@ beez.Sequence = Backbone.Model.extend({
 
   scheduleNote: function (beatNumber, time) {
     var note = this.get("notes")[beatNumber];
-    if (note) {
+    var mode = this.get("modes")[beatNumber];
+    var oldMode = this.previousMode;
+    if (mode === 0) {
+      if (oldMode === 2)
+        this.trigger("scheduleUnmute", time);
       this.trigger("schedule", frequencyForNote(note), time);
+      this.previousMode = 0;
+    }
+    else if (mode === 1) {
+      // Hold is by default
+    }
+    else if (mode === 2) {
+      if (oldMode !== 2)
+        this.trigger("scheduleMute", time);
+      this.previousMode = 2;
     }
   }
 });

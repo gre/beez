@@ -22,7 +22,7 @@ beez.params = new beez.Parameters(_.map([
     name: "bpm",
     value: 90,
     from: 20,
-    to: 200,
+    to: 240,
     tab: "carrier",
     axis: "x"
   },
@@ -39,8 +39,8 @@ beez.params = new beez.Parameters(_.map([
     id: "moddetune",
     name: "finetune",
     value: 0,
-    from: -20,
-    to: 20,
+    from: -40,
+    to: 40,
     tab: "modulator",
     axis: "x"
   },
@@ -49,7 +49,7 @@ beez.params = new beez.Parameters(_.map([
     name: "gain",
     value: 100,
     from: 0,
-    to: 500,
+    to: 800,
     tab: "modulator",
     axis: "y"
   },
@@ -112,3 +112,4 @@ beez.params = new beez.Parameters(_.map([
 ], function (o) {
   return new beez.Parameter(o);
 }));
+
