@@ -18,60 +18,6 @@
 
 beez.params = new beez.Parameters(_.map([
   {
-    id: "bpm",
-    name: "bpm",
-    value: 90,
-    from: 20,
-    to: 240,
-    tab: "carrier",
-    axis: "x"
-  },
-  {
-    id: "carriergain",
-    name: "gain",
-    value: 0.5,
-    from: 0,
-    to: 1,
-    tab: "carrier",
-    axis: "y"
-  },
-  {
-    id: "moddetune",
-    name: "finetune",
-    value: 0,
-    from: -40,
-    to: 40,
-    tab: "modulator",
-    axis: "x"
-  },
-  {
-    id: "modgain",
-    name: "gain",
-    value: 100,
-    from: 0,
-    to: 800,
-    tab: "modulator",
-    axis: "y"
-  },
-  {
-    id: "modmult",
-    name: "modulator",
-    value: 1,
-    from: 0,
-    to: 2,
-    tab: "FM multiplicator",
-    axis: "x"
-  },
-  {
-    id: "carriermult",
-    name: "carrier",
-    value: 1,
-    from: 0,
-    to: 2,
-    tab: "FM multiplicator",
-    axis: "y"
-  },
-  {
     id: "reverbdry",
     name: "dry",
     value: 0.5,
@@ -107,6 +53,60 @@ beez.params = new beez.Parameters(_.map([
     from: 0,
     to: 20,
     tab: "filter",
+    axis: "y"
+  },
+  {
+    id: "moddetune",
+    name: "finetune",
+    value: 0,
+    from: -60,
+    to: 60,
+    tab: "modulator",
+    axis: "x"
+  },
+  {
+    id: "modgain",
+    name: "gain",
+    value: 100,
+    from: 0,
+    to: 800,
+    tab: "modulator",
+    axis: "y"
+  },
+  {
+    id: "modmult",
+    name: "modulator",
+    value: 1,
+    from: 0,
+    to: 2,
+    tab: "FM multiplicator",
+    axis: "x"
+  },
+  {
+    id: "carriermult",
+    name: "carrier",
+    value: 1,
+    from: 0,
+    to: 2,
+    tab: "FM multiplicator",
+    axis: "y"
+  },
+  {
+    id: "bpm",
+    name: "bpm",
+    value: 90,
+    from: 20,
+    to: 240,
+    tab: "master",
+    axis: "x"
+  },
+  {
+    id: "carriergain",
+    name: "gain",
+    value: 0.5,
+    from: 0,
+    to: 1,
+    tab: "master",
     axis: "y"
   }
 ], function (o) {

@@ -16,7 +16,7 @@
  * along with Beez.  If not, see <http://www.gnu.org/licenses/agpl-3.0.html>
  */
 var major = [ 0, 2, 4, 5, 7, 9, 11 ];
-var MODE_HEIGHT = 20;
+var MODE_HEIGHT = 30;
 beez.NotesView = Backbone.View.extend({
   initialize: function () {
     this.canvas = document.createElement("canvas");
